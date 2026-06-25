@@ -1,0 +1,136 @@
+/* App-specific styles on top of Stellar */
+
+.alert {
+  padding: 0.75em 1em;
+  margin-bottom: 1.5em;
+  border-radius: 4px;
+  text-align: left;
+}
+
+.alert-error {
+  background: rgba(220, 53, 69, 0.15);
+  border: 1px solid rgba(220, 53, 69, 0.4);
+  color: #f8d7da;
+}
+
+.alert-info {
+  background: rgba(23, 162, 184, 0.15);
+  border: 1px solid rgba(23, 162, 184, 0.4);
+  color: #d1ecf1;
+}
+
+.alert-warning {
+  background: rgba(255, 193, 7, 0.15);
+  border: 1px solid rgba(255, 193, 7, 0.5);
+  color: #fff3cd;
+}
+
+.alert-success {
+  background: rgba(40, 167, 69, 0.15);
+  border: 1px solid rgba(40, 167, 69, 0.4);
+  color: #d4edda;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  margin-bottom: 1.5em;
+}
+
+table.patient-table {
+  width: 100%;
+  margin: 0;
+}
+
+table.patient-table th,
+table.patient-table td {
+  padding: 0.5em 0.75em;
+  vertical-align: top;
+}
+
+.panel {
+  text-align: left;
+  margin-bottom: 2em;
+}
+
+.panel h3 {
+  margin-bottom: 0.5em;
+}
+
+.form-grid label {
+  display: block;
+  margin-top: 0.75em;
+  margin-bottom: 0.25em;
+  font-size: 0.9em;
+}
+
+.form-grid input,
+.form-grid textarea,
+.form-grid select {
+  width: 100%;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75em;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5em;
+}
+
+.toolbar .actions {
+  margin: 0;
+}
+
+.storage-banner {
+  margin-bottom: 1.5em;
+}
+
+.login-box {
+  max-width: 28em;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.hidden {
+  display: none !important;
+}
+
+#loading {
+  text-align: center;
+  padding: 2em;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.2em 0.6em;
+  border-radius: 3px;
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-admin {
+  background: rgba(111, 66, 193, 0.3);
+  border: 1px solid rgba(111, 66, 193, 0.6);
+}
+
+.badge-staff {
+  background: rgba(23, 162, 184, 0.3);
+  border: 1px solid rgba(23, 162, 184, 0.6);
+}
+
+.history-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.history-list li {
+  padding: 0.75em 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.history-list li:last-child {
+  border-bottom: none;
+}

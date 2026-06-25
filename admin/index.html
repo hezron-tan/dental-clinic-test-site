@@ -1,0 +1,132 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Admin Dashboard — Dental Clinic</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="../assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="../assets/css/noscript.css" /></noscript>
+		<link rel="stylesheet" href="../css/app.css" />
+	</head>
+	<body class="is-preload">
+
+		<div id="wrapper">
+			<header id="header">
+				<h1>Admin Dashboard</h1>
+				<p>
+					<span id="user-greeting" data-testid="user-greeting"></span>
+					<span id="user-role" class="badge"></span>
+				</p>
+			</header>
+
+			<center style="margin-bottom:40px">
+				<nav id="nav">
+					<ul>
+						<li><a href="../index.html">Public Site</a></li>
+						<li><a href="../staff/">Staff View</a></li>
+						<li><a href="#" id="logout-btn" data-testid="logout-btn">Logout</a></li>
+					</ul>
+				</nav>
+			</center>
+
+			<div id="main">
+				<section class="main">
+					<div id="storage-banner" class="alert alert-warning storage-banner" hidden></div>
+					<div id="admin-alert" class="alert" hidden data-testid="admin-alert"></div>
+
+					<div class="panel">
+						<h2>Clinic Information</h2>
+						<p>Changes appear on the public homepage immediately.</p>
+						<form id="clinic-form" class="form-grid" data-testid="clinic-form">
+							<label for="name">Clinic Name</label>
+							<input type="text" id="name" name="name" required data-testid="clinic-name-input" />
+
+							<label for="tagline">Tagline</label>
+							<input type="text" id="tagline" name="tagline" data-testid="clinic-tagline-input" />
+
+							<label for="address">Address</label>
+							<input type="text" id="address" name="address" data-testid="clinic-address-input" />
+
+							<label for="phone">Phone</label>
+							<input type="text" id="phone" name="phone" data-testid="clinic-phone-input" />
+
+							<label for="email">Email</label>
+							<input type="email" id="email" name="email" data-testid="clinic-email-input" />
+
+							<label for="hours">Office Hours</label>
+							<input type="text" id="hours" name="hours" data-testid="clinic-hours-input" />
+
+							<ul class="actions" style="margin-top:1em">
+								<li><button type="submit" class="button primary" data-testid="save-clinic">Save Clinic Info</button></li>
+							</ul>
+						</form>
+					</div>
+
+					<div class="panel">
+						<div class="toolbar">
+							<h2>Patients</h2>
+							<ul class="actions">
+								<li><button type="button" class="button primary" id="add-patient-btn" data-testid="add-patient">Add Patient</button></li>
+							</ul>
+						</div>
+
+						<div class="table-wrapper">
+							<table class="patient-table" id="patient-table" data-testid="patient-table">
+								<thead>
+									<tr>
+										<th>Name</th>
+										<th>Phone</th>
+										<th>Email</th>
+										<th>Actions</th>
+									</tr>
+								</thead>
+								<tbody></tbody>
+							</table>
+						</div>
+
+						<div id="patient-form-panel" class="panel" hidden>
+							<h3 id="patient-form-title">Add Patient</h3>
+							<form id="patient-form" class="form-grid" data-testid="patient-form">
+								<label>First Name</label>
+								<input type="text" name="first_name" required data-testid="patient-first-name" />
+								<label>Last Name</label>
+								<input type="text" name="last_name" required data-testid="patient-last-name" />
+								<label>Date of Birth</label>
+								<input type="date" name="date_of_birth" data-testid="patient-dob" />
+								<label>Email</label>
+								<input type="email" name="email" data-testid="patient-email" />
+								<label>Phone</label>
+								<input type="text" name="phone" data-testid="patient-phone" />
+								<label>Address</label>
+								<input type="text" name="address" data-testid="patient-address" />
+								<label>Emergency Contact Name</label>
+								<input type="text" name="emergency_contact_name" />
+								<label>Emergency Contact Phone</label>
+								<input type="text" name="emergency_contact_phone" />
+								<label>Notes</label>
+								<textarea name="notes" rows="3"></textarea>
+								<ul class="actions" style="margin-top:1em">
+									<li><button type="submit" class="button primary" data-testid="save-patient">Save</button></li>
+									<li><button type="button" class="button" id="cancel-patient-btn">Cancel</button></li>
+								</ul>
+							</form>
+						</div>
+					</div>
+				</section>
+			</div>
+		</div>
+
+		<script src="../assets/js/jquery.min.js"></script>
+		<script src="../assets/js/browser.min.js"></script>
+		<script src="../assets/js/breakpoints.min.js"></script>
+		<script src="../assets/js/util.js"></script>
+		<script src="../assets/js/main.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+		<script src="../js/config.js"></script>
+		<script src="../js/supabase-client.js"></script>
+		<script src="../js/app.js"></script>
+		<script src="../js/auth.js"></script>
+		<script src="../js/patients.js"></script>
+		<script src="../js/admin-dashboard.js"></script>
+	</body>
+</html>
