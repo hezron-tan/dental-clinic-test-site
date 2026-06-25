@@ -61,13 +61,29 @@ The trigger in `schema.sql` automatically creates a row in `profiles` with the c
 
 ### Troubleshooting profiles
 
-If users were created **before** running `schema.sql`, run this in SQL Editor (once per user):
+**RLS infinite recursion (`42P17`)** — if verify reports profile/patient failures but sign-in works, run [`supabase/fix-rls-recursion.sql`](../supabase/fix-rls-recursion.sql) in the SQL Editor. The original `profiles` policies queried `profiles` again inside RLS, which PostgreSQL rejects.
+
+**Admin profile wrong role** — if only the admin check fails but staff passes, the admin user was likely created without `{"role": "admin"}` metadata, so their profile defaulted to `staff`. Run in SQL Editor:
+
+```sql
+update public.profiles
+set role = 'admin'
+where id = (select id from auth.users where email = 'admin@clinic.test');
+```
+
+Or re-run the backfill at the end of [`supabase/fix-rls-recursion.sql`](../supabase/fix-rls-recursion.sql) (it assigns roles by test email).
+
+If users were created **before** running `schema.sql`, the fix script also backfills `profiles`. Or run this manually (once per user):
 
 ```sql
 insert into public.profiles (id, role, display_name)
 select id,
-       coalesce(raw_user_meta_data->>'role', 'staff'),
-       coalesce(raw_user_meta_data->>'display_name', email)
+       case email
+         when 'admin@clinic.test' then 'admin'
+         when 'staff@clinic.test' then 'staff'
+         else coalesce(raw_user_meta_data->>'role', 'staff')
+       end,
+       coalesce(raw_user_meta_data->>'display_name', split_part(email, '@', 1))
 from auth.users
 where email in ('admin@clinic.test', 'staff@clinic.test')
 on conflict (id) do update

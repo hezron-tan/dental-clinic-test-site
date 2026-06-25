@@ -13,18 +13,40 @@ create table if not exists public.profiles (
 
 alter table public.profiles enable row level security;
 
+-- Role helpers (security definer avoids infinite recursion in RLS policies)
+create or replace function public.is_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.profiles
+    where id = auth.uid() and role = 'admin'
+  );
+$$;
+
+create or replace function public.is_staff_or_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.profiles
+    where id = auth.uid() and role in ('admin', 'staff')
+  );
+$$;
+
 create policy "Users can read own profile"
   on public.profiles for select
   using (auth.uid() = id);
 
 create policy "Admins can read all profiles"
   on public.profiles for select
-  using (
-    exists (
-      select 1 from public.profiles p
-      where p.id = auth.uid() and p.role = 'admin'
-    )
-  );
+  using (public.is_admin());
 
 -- ---------------------------------------------------------------------------
 -- Clinic info (single row, public read)
@@ -48,21 +70,11 @@ create policy "Anyone can read clinic info"
 
 create policy "Admins can update clinic info"
   on public.clinic_info for update
-  using (
-    exists (
-      select 1 from public.profiles p
-      where p.id = auth.uid() and p.role = 'admin'
-    )
-  );
+  using (public.is_admin());
 
 create policy "Admins can insert clinic info"
   on public.clinic_info for insert
-  with check (
-    exists (
-      select 1 from public.profiles p
-      where p.id = auth.uid() and p.role = 'admin'
-    )
-  );
+  with check (public.is_admin());
 
 -- ---------------------------------------------------------------------------
 -- Patients
@@ -86,39 +98,19 @@ alter table public.patients enable row level security;
 
 create policy "Staff and admins can read patients"
   on public.patients for select
-  using (
-    exists (
-      select 1 from public.profiles p
-      where p.id = auth.uid() and p.role in ('admin', 'staff')
-    )
-  );
+  using (public.is_staff_or_admin());
 
 create policy "Staff and admins can insert patients"
   on public.patients for insert
-  with check (
-    exists (
-      select 1 from public.profiles p
-      where p.id = auth.uid() and p.role in ('admin', 'staff')
-    )
-  );
+  with check (public.is_staff_or_admin());
 
 create policy "Staff and admins can update patients"
   on public.patients for update
-  using (
-    exists (
-      select 1 from public.profiles p
-      where p.id = auth.uid() and p.role in ('admin', 'staff')
-    )
-  );
+  using (public.is_staff_or_admin());
 
 create policy "Admins can delete patients"
   on public.patients for delete
-  using (
-    exists (
-      select 1 from public.profiles p
-      where p.id = auth.uid() and p.role = 'admin'
-    )
-  );
+  using (public.is_admin());
 
 -- ---------------------------------------------------------------------------
 -- Patient visit history
@@ -139,39 +131,19 @@ alter table public.patient_history enable row level security;
 
 create policy "Staff and admins can read history"
   on public.patient_history for select
-  using (
-    exists (
-      select 1 from public.profiles p
-      where p.id = auth.uid() and p.role in ('admin', 'staff')
-    )
-  );
+  using (public.is_staff_or_admin());
 
 create policy "Staff and admins can insert history"
   on public.patient_history for insert
-  with check (
-    exists (
-      select 1 from public.profiles p
-      where p.id = auth.uid() and p.role in ('admin', 'staff')
-    )
-  );
+  with check (public.is_staff_or_admin());
 
 create policy "Staff and admins can update history"
   on public.patient_history for update
-  using (
-    exists (
-      select 1 from public.profiles p
-      where p.id = auth.uid() and p.role in ('admin', 'staff')
-    )
-  );
+  using (public.is_staff_or_admin());
 
 create policy "Admins can delete history"
   on public.patient_history for delete
-  using (
-    exists (
-      select 1 from public.profiles p
-      where p.id = auth.uid() and p.role = 'admin'
-    )
-  );
+  using (public.is_admin());
 
 -- ---------------------------------------------------------------------------
 -- Auto-create profile on signup (role from user metadata, default staff)
@@ -212,10 +184,7 @@ declare
   max_size bigint := 524288000;
   is_admin boolean;
 begin
-  select exists (
-    select 1 from public.profiles p
-    where p.id = auth.uid() and p.role = 'admin'
-  ) into is_admin;
+  is_admin := public.is_admin();
 
   if not is_admin then
     raise exception 'Admin access required';
