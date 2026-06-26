@@ -1,6 +1,10 @@
 (function () {
   'use strict';
 
+  const PAGE_SIZE = 10;
+
+  let allPatients = [];
+  let currentPage = 1;
   let currentPatientId = null;
 
   async function loadStorageWarning() {
@@ -67,32 +71,99 @@
     }
   }
 
-  function renderPatientTable(patients) {
-    const tbody = document.querySelector('#patient-table tbody');
-    tbody.innerHTML = patients.map(function (p) {
-      return '<tr data-testid="patient-row" data-patient-id="' + p.id + '">' +
-        '<td>' + App.escapeHtml(p.last_name + ', ' + p.first_name) + '</td>' +
-        '<td>' + App.escapeHtml(p.phone || '—') + '</td>' +
-        '<td>' + App.escapeHtml(p.email || '—') + '</td>' +
-        '<td><button type="button" class="button small edit-patient" data-id="' + p.id + '" data-testid="edit-patient">Edit</button> ' +
-        '<button type="button" class="button small delete-patient" data-id="' + p.id + '" data-testid="delete-patient">Delete</button></td>' +
-        '</tr>';
-    }).join('');
+  function renderPagination(total, totalPages, start, shown) {
+    const pageInfo = document.getElementById('page-info');
+    const prevBtn = document.getElementById('prev-page');
+    const nextBtn = document.getElementById('next-page');
+
+    if (!total) {
+      pageInfo.textContent = 'No patients to display';
+    } else {
+      const from = start + 1;
+      const to = start + shown;
+      pageInfo.textContent =
+        'Showing ' + from + '–' + to + ' of ' + total +
+        ' · Page ' + currentPage + ' of ' + totalPages;
+    }
+
+    prevBtn.disabled = currentPage <= 1;
+    nextBtn.disabled = currentPage >= totalPages;
   }
 
-  async function loadPatients() {
-    const patients = await Patients.list();
-    renderPatientTable(patients);
+  function renderPatientTable() {
+    const tbody = document.querySelector('#patient-table tbody');
+    const total = allPatients.length;
+    const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+    if (currentPage > totalPages) {
+      currentPage = totalPages;
+    }
+
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const pagePatients = allPatients.slice(start, start + PAGE_SIZE);
+
+    if (!pagePatients.length) {
+      tbody.innerHTML = '<tr><td colspan="4">No patients found.</td></tr>';
+    } else {
+      tbody.innerHTML = pagePatients.map(function (p) {
+        return '<tr data-testid="patient-row" data-patient-id="' + p.id + '">' +
+          '<td>' + App.escapeHtml(p.last_name + ', ' + p.first_name) + '</td>' +
+          '<td>' + App.escapeHtml(p.phone || '—') + '</td>' +
+          '<td>' + App.escapeHtml(p.email || '—') + '</td>' +
+          '<td><button type="button" class="button small edit-patient" data-id="' + p.id + '" data-testid="edit-patient">Edit</button> ' +
+          '<button type="button" class="button small delete-patient" data-id="' + p.id + '" data-testid="delete-patient">Delete</button></td>' +
+          '</tr>';
+      }).join('');
+    }
+
+    renderPagination(total, totalPages, start, pagePatients.length);
+  }
+
+  async function loadPatients(preservePage) {
+    allPatients = await Patients.list();
+    if (!preservePage) {
+      currentPage = 1;
+    }
+    renderPatientTable();
+  }
+
+  function hidePatientModal() {
+    const overlay = document.getElementById('patient-form-overlay');
+    overlay.hidden = true;
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+    currentPatientId = null;
   }
 
   function showPatientForm(patient) {
-    document.getElementById('patient-form-panel').hidden = false;
+    const overlay = document.getElementById('patient-form-overlay');
     const form = document.getElementById('patient-form');
     form.reset();
     currentPatientId = patient ? patient.id : null;
     document.getElementById('patient-form-title').textContent =
       patient ? 'Edit Patient' : 'Add Patient';
     if (patient) Patients.fillForm(form, patient);
+
+    overlay.hidden = false;
+    overlay.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+
+    const firstField = form.querySelector('[name="first_name"]');
+    if (firstField) firstField.focus();
+  }
+
+  function switchTab(tabId) {
+    document.querySelectorAll('.tab-btn').forEach(function (btn) {
+      const isActive = btn.dataset.tab === tabId;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    });
+
+    document.querySelectorAll('.tab-panel').forEach(function (panel) {
+      const isActive = panel.id === 'tab-' + tabId;
+      panel.classList.toggle('active', isActive);
+      panel.hidden = !isActive;
+    });
   }
 
   async function savePatientForm(e) {
@@ -100,15 +171,17 @@
     App.hideAlert('admin-alert');
     const payload = Patients.formToPatient(e.target);
 
+    const isEdit = !!currentPatientId;
+
     try {
       if (currentPatientId) {
         await Patients.update(currentPatientId, payload);
       } else {
         await Patients.create(payload);
       }
-      document.getElementById('patient-form-panel').hidden = true;
-      currentPatientId = null;
-      await loadPatients();
+      document.getElementById('patient-form').reset();
+      hidePatientModal();
+      await loadPatients(isEdit);
       App.showAlert('admin-alert', 'Patient saved.', 'success');
     } catch (err) {
       App.handleError('admin-alert', err);
@@ -116,7 +189,7 @@
   }
 
   document.addEventListener('DOMContentLoaded', async function () {
-    const profile = await Auth.requireRole(['admin'], '../login.html');
+    const profile = await Auth.requireRole(['admin']);
     if (!profile) return;
 
     document.getElementById('user-greeting').textContent =
@@ -126,19 +199,46 @@
 
     document.getElementById('logout-btn').addEventListener('click', async function () {
       await Auth.signOut();
-      window.location.href = '../login.html';
+      window.location.href = App.siteUrl('login.html');
     });
 
     document.getElementById('clinic-form').addEventListener('submit', saveClinicForm);
     document.getElementById('patient-form').addEventListener('submit', savePatientForm);
 
+    document.querySelectorAll('.tab-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        switchTab(btn.dataset.tab);
+      });
+    });
+
     document.getElementById('add-patient-btn').addEventListener('click', function () {
       showPatientForm(null);
     });
 
-    document.getElementById('cancel-patient-btn').addEventListener('click', function () {
-      document.getElementById('patient-form-panel').hidden = true;
-      currentPatientId = null;
+    document.getElementById('cancel-patient-btn').addEventListener('click', hidePatientModal);
+    document.getElementById('close-patient-overlay').addEventListener('click', hidePatientModal);
+    document.getElementById('patient-form-overlay').addEventListener('click', function (e) {
+      if (e.target === e.currentTarget) hidePatientModal();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !document.getElementById('patient-form-overlay').hidden) {
+        hidePatientModal();
+      }
+    });
+
+    document.getElementById('prev-page').addEventListener('click', function () {
+      if (currentPage > 1) {
+        currentPage -= 1;
+        renderPatientTable();
+      }
+    });
+
+    document.getElementById('next-page').addEventListener('click', function () {
+      const totalPages = Math.max(1, Math.ceil(allPatients.length / PAGE_SIZE));
+      if (currentPage < totalPages) {
+        currentPage += 1;
+        renderPatientTable();
+      }
     });
 
     document.querySelector('#patient-table').addEventListener('click', async function (e) {
@@ -146,6 +246,7 @@
       const deleteBtn = e.target.closest('.delete-patient');
 
       if (editBtn) {
+        switchTab('patients');
         const patient = await Patients.get(editBtn.dataset.id);
         showPatientForm(patient);
       }
@@ -154,7 +255,7 @@
         if (!confirm('Delete this patient and all their history?')) return;
         try {
           await Patients.remove(deleteBtn.dataset.id);
-          await loadPatients();
+          await loadPatients(true);
           App.showAlert('admin-alert', 'Patient deleted.', 'success');
         } catch (err) {
           App.handleError('admin-alert', err);

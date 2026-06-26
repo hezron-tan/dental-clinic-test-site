@@ -11,17 +11,22 @@ test.describe('Staff dashboard', () => {
     await expect(page).toHaveURL(/staff\/?/);
   });
 
-  test('lists patients and shows details', async ({ page }) => {
-    await expect(page.getByTestId('patient-list')).toBeVisible();
-    await page.getByTestId('select-patient').filter({ hasText: 'Johnson' }).first().click();
+  test('lists patients in a table and shows details', async ({ page }) => {
+    await expect(page.getByTestId('patient-table')).toBeVisible();
+    await expect(page.getByTestId('patient-pagination')).toBeVisible();
+
+    const johnsonRow = page.getByTestId('patient-row').filter({ hasText: 'Johnson' }).first();
+    await johnsonRow.getByTestId('edit-patient').click();
 
     await expect(page.getByTestId('patient-details')).toBeVisible();
     await expect(page.getByTestId('history-list')).toBeVisible();
     await expect(page.getByTestId('history-form')).toBeVisible();
+    await expect(page.getByTestId('delete-patient')).toHaveCount(0);
   });
 
   test('updates patient phone number', async ({ page }) => {
-    await page.getByTestId('select-patient').filter({ hasText: 'Mendez' }).first().click();
+    const mendezRow = page.getByTestId('patient-row').filter({ hasText: 'Mendez' }).first();
+    await mendezRow.getByTestId('edit-patient').click();
     await expect(page.getByTestId('patient-details')).toBeVisible();
 
     const uniquePhone = `(503) 555-${String(Date.now()).slice(-4)}`;
@@ -33,7 +38,8 @@ test.describe('Staff dashboard', () => {
   });
 
   test('adds a visit history record', async ({ page }) => {
-    await page.getByTestId('select-patient').filter({ hasText: 'Chen' }).first().click();
+    const chenRow = page.getByTestId('patient-row').filter({ hasText: 'Chen' }).first();
+    await chenRow.getByTestId('edit-patient').click();
 
     const today = new Date().toISOString().slice(0, 10);
     await page.getByTestId('history-date').fill(today);
@@ -44,5 +50,14 @@ test.describe('Staff dashboard', () => {
 
     await expect(page.getByTestId('staff-alert')).toContainText(/added/i);
     await expect(page.getByTestId('history-entry').first()).toContainText('Cleaning');
+  });
+
+  test('searches patients by name', async ({ page }) => {
+    await page.getByTestId('search-name').fill('Johnson');
+    await page.getByTestId('search-patients').click();
+
+    const rows = page.getByTestId('patient-row');
+    await expect(rows).not.toHaveCount(0);
+    await expect(rows.first()).toContainText('Johnson');
   });
 });

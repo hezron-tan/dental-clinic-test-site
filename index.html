@@ -1,6 +1,6 @@
 <!DOCTYPE HTML>
 <!--
-	Stellar by HTML5 UP — adapted for Bright Smile Dental Clinic
+	Arcana by HTML5 UP — adapted for Bright Smile Dental Clinic
 	html5up.net | @ajlkn | CCA 3.0 license
 -->
 <html>
@@ -9,95 +9,119 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="assets/css/main.css" />
-		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
 		<link rel="stylesheet" href="css/app.css" />
 	</head>
 	<body class="is-preload">
+		<div id="page-wrapper">
 
-		<div id="wrapper">
-			<header id="header" class="alt">
-				<span class="logo"><img src="images/logo.svg" alt="" /></span>
-				<h1 id="clinic-name" data-testid="clinic-name">Bright Smile Dental Clinic</h1>
-				<p id="clinic-tagline" data-testid="clinic-tagline">Your trusted neighborhood dental care</p>
-			</header>
-
-			<center style="margin-bottom:40px">
+			<div id="header">
+				<h1><a href="index.html" id="logo">Bright Smile <em>Dental Clinic</em></a></h1>
 				<nav id="nav">
 					<ul>
-						<li><a href="index.html">Home</a></li>
+						<li class="current"><a href="index.html">Home</a></li>
 						<li><a href="#contact">Contact</a></li>
 						<li><a href="login.html" data-testid="nav-login">Staff Login</a></li>
 					</ul>
 				</nav>
-			</center>
+			</div>
 
-			<div id="main">
-				<section id="intro" class="main">
-					<div class="spotlight">
-						<div class="content">
-							<header class="major">
-								<h2>Welcome to our practice</h2>
-							</header>
-							<p>We provide comprehensive dental care for the whole family — from routine cleanings to restorative treatments. Our friendly team is here to keep your smile healthy.</p>
-							<ul class="actions">
-								<li><a href="#contact" class="button primary">Contact Us</a></li>
-								<li><a href="login.html" class="button">Staff Portal</a></li>
-							</ul>
-						</div>
-						<span class="image"><span class="icon solid major style1 fa-tooth" style="font-size:8em;line-height:1.2;display:block;text-align:center;padding:1em 0;"></span></span>
+			<section id="banner">
+				<header>
+					<h2>
+						<span id="clinic-name" data-testid="clinic-name">Bright Smile Dental Clinic</span>
+						<em id="clinic-tagline" data-testid="clinic-tagline">Your trusted neighborhood dental care</em>
+					</h2>
+					<a href="#contact" class="button">Contact Us</a>
+				</header>
+			</section>
+
+			<section class="wrapper style1">
+				<div class="container">
+					<div class="row gtr-200">
+						<section class="col-4 col-12-narrower">
+							<div class="box highlight">
+								<i class="icon solid major fa-teeth"></i>
+								<h3>Preventive Care</h3>
+								<p>Regular checkups, cleanings, and oral health education to prevent problems before they start.</p>
+							</div>
+						</section>
+						<section class="col-4 col-12-narrower">
+							<div class="box highlight">
+								<i class="icon solid major fa-heart"></i>
+								<h3>Restorative Dentistry</h3>
+								<p>Fillings, crowns, and bridges to restore function and appearance to damaged teeth.</p>
+							</div>
+						</section>
+						<section class="col-4 col-12-narrower">
+							<div class="box highlight">
+								<i class="icon solid major fa-smile"></i>
+								<h3>Cosmetic Dentistry</h3>
+								<p>Whitening and veneers to help you feel confident about your smile.</p>
+							</div>
+						</section>
 					</div>
-				</section>
+				</div>
+			</section>
 
-				<section id="services" class="main special">
-					<header class="major">
-						<h2>Our Services</h2>
-					</header>
-					<ul class="features">
-						<li>
-							<span class="icon solid major style1 fa-teeth"></span>
-							<h3>Preventive Care</h3>
-							<p>Regular checkups, cleanings, and oral health education to prevent problems before they start.</p>
-						</li>
-						<li>
-							<span class="icon major style3 fa-heart"></span>
-							<h3>Restorative Dentistry</h3>
-							<p>Fillings, crowns, and bridges to restore function and appearance to damaged teeth.</p>
-						</li>
-						<li>
-							<span class="icon major style5 fa-smile"></span>
-							<h3>Cosmetic Dentistry</h3>
-							<p>Whitening and veneers to help you feel confident about your smile.</p>
-						</li>
-					</ul>
-				</section>
-
-				<section id="hours" class="main special">
+			<section class="wrapper style2">
+				<div class="container">
 					<header class="major">
 						<h2>Office Hours</h2>
 						<p id="clinic-hours" data-testid="clinic-hours">Mon–Fri 8:00 AM – 6:00 PM | Sat 9:00 AM – 1:00 PM</p>
 					</header>
-				</section>
+				</div>
+			</section>
+
+			<section class="wrapper style1">
+				<div class="container">
+					<header class="major">
+						<h2>Welcome to our practice</h2>
+						<p>We provide comprehensive dental care for the whole family — from routine cleanings to restorative treatments. Our friendly team is here to keep your smile healthy.</p>
+					</header>
+					<ul class="actions special">
+						<li><a href="#contact" class="button primary">Contact Us</a></li>
+						<li><a href="login.html" class="button">Staff Portal</a></li>
+					</ul>
+				</div>
+			</section>
+
+			<div id="footer">
+				<div class="container">
+					<div class="row" id="contact">
+						<section class="col-6 col-12-narrower">
+							<h3>Contact Us</h3>
+							<dl class="contact">
+								<dt>Address</dt>
+								<dd id="clinic-address" data-testid="clinic-address">123 Main Street, Suite 100, Portland, OR 97201</dd>
+								<dt>Phone</dt>
+								<dd id="clinic-phone" data-testid="clinic-phone">(503) 555-0142</dd>
+								<dt>Email</dt>
+								<dd><a id="clinic-email-link" href="mailto:hello@brightsmile-dental.test" data-testid="clinic-email">hello@brightsmile-dental.test</a></dd>
+							</dl>
+						</section>
+						<section class="col-6 col-12-narrower">
+							<h3>Quick Links</h3>
+							<ul class="links">
+								<li><a href="index.html">Home</a></li>
+								<li><a href="#contact">Contact</a></li>
+								<li><a href="login.html">Staff Login</a></li>
+							</ul>
+						</section>
+					</div>
+				</div>
+
+				<div class="copyright">
+					<ul class="menu">
+						<li>&copy; <span id="clinic-name-footer">Bright Smile Dental Clinic</span></li>
+						<li>Design: <a href="https://html5up.net/arcana">HTML5 UP</a></li>
+					</ul>
+				</div>
 			</div>
 
-			<footer id="footer">
-				<section id="contact">
-					<h2>Contact Us</h2>
-					<dl class="alt">
-						<dt>Address</dt>
-						<dd id="clinic-address" data-testid="clinic-address">123 Main Street, Suite 100, Portland, OR 97201</dd>
-						<dt>Phone</dt>
-						<dd id="clinic-phone" data-testid="clinic-phone">(503) 555-0142</dd>
-						<dt>Email</dt>
-						<dd><a id="clinic-email-link" href="mailto:hello@brightsmile-dental.test" data-testid="clinic-email">hello@brightsmile-dental.test</a></dd>
-					</dl>
-				</section>
-				<p class="copyright">&copy; <span id="clinic-name-footer">Bright Smile Dental Clinic</span>. Design: <a href="https://html5up.net">HTML5 UP</a>.</p>
-			</footer>
 		</div>
 
 		<script src="assets/js/jquery.min.js"></script>
-		<script src="assets/js/jquery.scrollex.min.js"></script>
-		<script src="assets/js/jquery.scrolly.min.js"></script>
+		<script src="assets/js/jquery.dropotron.min.js"></script>
 		<script src="assets/js/browser.min.js"></script>
 		<script src="assets/js/breakpoints.min.js"></script>
 		<script src="assets/js/util.js"></script>

@@ -1,113 +1,199 @@
 <!DOCTYPE HTML>
+<!--
+	Arcana by HTML5 UP — adapted for Bright Smile Dental Clinic
+	html5up.net | @ajlkn | CCA 3.0 license
+-->
 <html>
 	<head>
 		<title>Staff Dashboard — Dental Clinic</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="../assets/css/main.css" />
-		<noscript><link rel="stylesheet" href="../assets/css/noscript.css" /></noscript>
 		<link rel="stylesheet" href="../css/app.css" />
 	</head>
-	<body class="is-preload">
+	<body class="is-preload staff-dashboard">
+		<div id="page-wrapper">
 
-		<div id="wrapper">
-			<header id="header">
-				<h1>Staff Dashboard</h1>
-				<p>
-					<span id="user-greeting" data-testid="user-greeting"></span>
-					<span id="user-role" class="badge"></span>
-				</p>
-			</header>
-
-			<center style="margin-bottom:40px">
+			<div id="header">
+				<h1><a href="../index.html" id="logo">Bright Smile <em>Dental Clinic</em></a></h1>
 				<nav id="nav">
 					<ul>
-						<li><a href="../index.html">Public Site</a></li>
-						<li><a href="../admin/" id="admin-link" hidden>Admin</a></li>
 						<li><a href="#" id="logout-btn" data-testid="logout-btn">Logout</a></li>
 					</ul>
 				</nav>
-			</center>
+			</div>
 
-			<div id="main">
-				<section class="main">
-					<div id="staff-alert" class="alert" hidden data-testid="staff-alert"></div>
+			<section class="wrapper style1">
+				<div class="container">
+					<div id="content">
+						<article>
+							<header>
+								<h2>Staff Dashboard</h2>
+								<p>
+									<span id="user-greeting" data-testid="user-greeting"></span>
+									<span id="user-role" class="badge"></span>
+								</p>
+							</header>
 
-					<div class="panel">
-						<h2>Select a Patient</h2>
-						<ul id="patient-list" class="actions" data-testid="patient-list"></ul>
+							<div id="staff-alert" class="alert" hidden data-testid="staff-alert"></div>
+
+							<div class="panel">
+								<div class="toolbar">
+									<h3>Patients</h3>
+									<ul class="actions">
+										<li><button type="button" class="button primary" id="add-patient-btn" data-testid="add-patient">Add Patient</button></li>
+									</ul>
+								</div>
+
+								<form id="patient-search-form" class="search-form" data-testid="patient-search">
+									<div class="search-fields">
+										<div>
+											<label for="search-name">Search by name</label>
+											<input type="text" id="search-name" class="search-input" data-testid="search-name" placeholder="First or last name" />
+										</div>
+										<div>
+											<label for="search-dob">Date of birth</label>
+											<input type="text" id="search-dob" class="search-input" data-testid="search-dob" placeholder="dd/mm/yyyy" inputmode="numeric" />
+										</div>
+										<ul class="actions">
+											<li><button type="submit" class="button" data-testid="search-patients">Search</button></li>
+											<li><button type="button" class="button" id="clear-search-btn" data-testid="clear-search">Clear</button></li>
+										</ul>
+									</div>
+								</form>
+
+								<div class="table-wrapper">
+									<table class="patient-table" id="patient-table" data-testid="patient-table">
+										<thead>
+											<tr>
+												<th>Name</th>
+												<th>Date of Birth</th>
+												<th>Phone</th>
+												<th>Email</th>
+												<th>Actions</th>
+											</tr>
+										</thead>
+										<tbody></tbody>
+									</table>
+								</div>
+
+								<div class="pagination-bar" id="patient-pagination" data-testid="patient-pagination">
+									<button type="button" class="button" id="prev-page" data-testid="prev-page" disabled>Previous</button>
+									<span id="page-info" data-testid="page-info"></span>
+									<button type="button" class="button" id="next-page" data-testid="next-page" disabled>Next</button>
+								</div>
+							</div>
+
+							<div id="patient-details" class="panel" hidden data-testid="patient-details">
+								<h3 id="detail-name"></h3>
+								<dl class="contact">
+									<dt>Date of Birth</dt><dd id="detail-dob"></dd>
+									<dt>Phone</dt><dd id="detail-phone"></dd>
+									<dt>Email</dt><dd id="detail-email"></dd>
+									<dt>Address</dt><dd id="detail-address"></dd>
+									<dt>Emergency Contact</dt><dd id="detail-emergency"></dd>
+									<dt>Notes</dt><dd id="detail-notes"></dd>
+								</dl>
+
+								<h3>Edit Personal Details</h3>
+								<form id="patient-form" class="form-grid" data-testid="patient-form">
+									<label>First Name</label>
+									<input type="text" name="first_name" required data-testid="patient-first-name" />
+									<label>Last Name</label>
+									<input type="text" name="last_name" required data-testid="patient-last-name" />
+									<label>Date of Birth</label>
+									<input type="date" name="date_of_birth" data-testid="patient-dob" />
+									<label>Email</label>
+									<input type="email" name="email" data-testid="patient-email" />
+									<label>Phone</label>
+									<input type="text" name="phone" data-testid="patient-phone" />
+									<label>Address</label>
+									<input type="text" name="address" data-testid="patient-address" />
+									<label>Emergency Contact Name</label>
+									<input type="text" name="emergency_contact_name" />
+									<label>Emergency Contact Phone</label>
+									<input type="text" name="emergency_contact_phone" />
+									<label>Notes</label>
+									<textarea name="notes" rows="3"></textarea>
+									<ul class="actions" style="margin-top:1em">
+										<li><button type="submit" class="button primary" data-testid="save-patient">Save Details</button></li>
+										<li><button type="button" class="button" id="close-patient-details-btn">Close</button></li>
+									</ul>
+								</form>
+
+								<h3>Visit History</h3>
+								<ul id="history-list" class="history-list" data-testid="history-list"></ul>
+
+								<h3>Add Visit Record</h3>
+								<form id="history-form" class="form-grid" data-testid="history-form">
+									<label>Visit Date</label>
+									<input type="date" name="visit_date" required data-testid="history-date" />
+									<label>Procedure Type</label>
+									<select name="procedure_type" required data-testid="history-procedure">
+										<option value="Checkup">Checkup</option>
+										<option value="Cleaning">Cleaning</option>
+										<option value="Filling">Filling</option>
+										<option value="Extraction">Extraction</option>
+										<option value="Root Canal">Root Canal</option>
+										<option value="Crown">Crown</option>
+										<option value="X-Ray">X-Ray</option>
+										<option value="Other">Other</option>
+									</select>
+									<label>Description</label>
+									<input type="text" name="description" data-testid="history-description" />
+									<label>Dentist</label>
+									<input type="text" name="dentist_name" data-testid="history-dentist" />
+									<label>Notes</label>
+									<textarea name="history_notes" rows="2"></textarea>
+									<ul class="actions" style="margin-top:1em">
+										<li><button type="submit" class="button primary" data-testid="add-history">Add Visit</button></li>
+									</ul>
+								</form>
+							</div>
+						</article>
 					</div>
+				</div>
+			</section>
 
-					<div id="patient-details" class="panel" hidden data-testid="patient-details">
-						<h2 id="detail-name"></h2>
-						<dl class="alt">
-							<dt>Date of Birth</dt><dd id="detail-dob"></dd>
-							<dt>Phone</dt><dd id="detail-phone"></dd>
-							<dt>Email</dt><dd id="detail-email"></dd>
-							<dt>Address</dt><dd id="detail-address"></dd>
-							<dt>Emergency Contact</dt><dd id="detail-emergency"></dd>
-							<dt>Notes</dt><dd id="detail-notes"></dd>
-						</dl>
+		</div>
 
-						<h3>Edit Personal Details</h3>
-						<form id="patient-form" class="form-grid" data-testid="patient-form">
-							<label>First Name</label>
-							<input type="text" name="first_name" required data-testid="patient-first-name" />
-							<label>Last Name</label>
-							<input type="text" name="last_name" required data-testid="patient-last-name" />
-							<label>Date of Birth</label>
-							<input type="date" name="date_of_birth" data-testid="patient-dob" />
-							<label>Email</label>
-							<input type="email" name="email" data-testid="patient-email" />
-							<label>Phone</label>
-							<input type="text" name="phone" data-testid="patient-phone" />
-							<label>Address</label>
-							<input type="text" name="address" data-testid="patient-address" />
-							<label>Emergency Contact Name</label>
-							<input type="text" name="emergency_contact_name" />
-							<label>Emergency Contact Phone</label>
-							<input type="text" name="emergency_contact_phone" />
-							<label>Notes</label>
-							<textarea name="notes" rows="3"></textarea>
-							<ul class="actions" style="margin-top:1em">
-								<li><button type="submit" class="button primary" data-testid="save-patient">Save Details</button></li>
-							</ul>
-						</form>
-
-						<h3>Visit History</h3>
-						<ul id="history-list" class="history-list" data-testid="history-list"></ul>
-
-						<h3>Add Visit Record</h3>
-						<form id="history-form" class="form-grid" data-testid="history-form">
-							<label>Visit Date</label>
-							<input type="date" name="visit_date" required data-testid="history-date" />
-							<label>Procedure Type</label>
-							<select name="procedure_type" required data-testid="history-procedure">
-								<option value="Checkup">Checkup</option>
-								<option value="Cleaning">Cleaning</option>
-								<option value="Filling">Filling</option>
-								<option value="Extraction">Extraction</option>
-								<option value="Root Canal">Root Canal</option>
-								<option value="Crown">Crown</option>
-								<option value="X-Ray">X-Ray</option>
-								<option value="Other">Other</option>
-							</select>
-							<label>Description</label>
-							<input type="text" name="description" data-testid="history-description" />
-							<label>Dentist</label>
-							<input type="text" name="dentist_name" data-testid="history-dentist" />
-							<label>Notes</label>
-							<textarea name="history_notes" rows="2"></textarea>
-							<ul class="actions" style="margin-top:1em">
-								<li><button type="submit" class="button primary" data-testid="add-history">Add Visit</button></li>
-							</ul>
-						</form>
-					</div>
-				</section>
+		<div id="add-patient-overlay" class="modal-overlay" hidden aria-hidden="true" data-testid="add-patient-overlay">
+			<div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="add-patient-title">
+				<button type="button" class="modal-close" id="close-add-patient-overlay" aria-label="Close" data-testid="close-add-patient-overlay">&times;</button>
+				<div class="modal-header">
+					<h3 id="add-patient-title">Add Patient</h3>
+				</div>
+				<div class="modal-body">
+				<form id="add-patient-form" class="form-grid" data-testid="add-patient-form">
+					<label>First Name</label>
+					<input type="text" name="first_name" required data-testid="add-patient-first-name" />
+					<label>Last Name</label>
+					<input type="text" name="last_name" required data-testid="add-patient-last-name" />
+					<label>Date of Birth</label>
+					<input type="date" name="date_of_birth" data-testid="add-patient-dob" />
+					<label>Email</label>
+					<input type="email" name="email" data-testid="add-patient-email" />
+					<label>Phone</label>
+					<input type="text" name="phone" data-testid="add-patient-phone" />
+					<label>Address</label>
+					<input type="text" name="address" data-testid="add-patient-address" />
+					<label>Emergency Contact Name</label>
+					<input type="text" name="emergency_contact_name" />
+					<label>Emergency Contact Phone</label>
+					<input type="text" name="emergency_contact_phone" />
+					<label>Notes</label>
+					<textarea name="notes" rows="3"></textarea>
+					<ul class="actions special modal-actions">
+						<li><button type="submit" class="button primary" data-testid="save-new-patient">Save Patient</button></li>
+						<li><button type="button" class="button" id="cancel-add-patient-btn">Cancel</button></li>
+					</ul>
+				</form>
+				</div>
 			</div>
 		</div>
 
 		<script src="../assets/js/jquery.min.js"></script>
+		<script src="../assets/js/jquery.dropotron.min.js"></script>
 		<script src="../assets/js/browser.min.js"></script>
 		<script src="../assets/js/breakpoints.min.js"></script>
 		<script src="../assets/js/util.js"></script>
