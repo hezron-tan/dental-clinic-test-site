@@ -9,7 +9,7 @@
 
       const script = [...document.querySelectorAll('script[src]')].find((el) => {
         const src = el.getAttribute('src') || '';
-        return /\/js\/(auth|app|config|supabase-client)\.js(\?|$)/.test(src) || /^(?:\.\.\/)+js\//.test(src);
+        return /(?:^|\/)js\/(auth|app|config|supabase-client)\.js(\?|$)/.test(src);
       });
 
       if (!script) {
