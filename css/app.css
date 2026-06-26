@@ -1,4 +1,30 @@
-/* App-specific styles on top of Stellar */
+/* App-specific styles on top of Arcana */
+
+body.admin-dashboard #nav > ul,
+body.staff-dashboard #nav > ul {
+  text-align: right;
+  padding-right: 1.5em;
+}
+
+body.admin-dashboard #nav > ul > li,
+body.staff-dashboard #nav > ul > li {
+  margin-left: 0;
+}
+
+#banner header h2 {
+  display: block;
+}
+
+#banner header h2 em {
+  display: block;
+  margin-top: 0.35em;
+  font-size: 0.85em;
+  font-weight: 300;
+}
+
+#banner header .button {
+  margin: 1em 0 0 0;
+}
 
 .alert {
   padding: 0.75em 1em;
@@ -8,27 +34,27 @@
 }
 
 .alert-error {
-  background: rgba(220, 53, 69, 0.15);
+  background: rgba(220, 53, 69, 0.12);
   border: 1px solid rgba(220, 53, 69, 0.4);
-  color: #f8d7da;
+  color: #842029;
 }
 
 .alert-info {
-  background: rgba(23, 162, 184, 0.15);
+  background: rgba(23, 162, 184, 0.12);
   border: 1px solid rgba(23, 162, 184, 0.4);
-  color: #d1ecf1;
+  color: #055160;
 }
 
 .alert-warning {
-  background: rgba(255, 193, 7, 0.15);
-  border: 1px solid rgba(255, 193, 7, 0.5);
-  color: #fff3cd;
+  background: rgba(255, 193, 7, 0.2);
+  border: 1px solid rgba(255, 193, 7, 0.6);
+  color: #664d03;
 }
 
 .alert-success {
-  background: rgba(40, 167, 69, 0.15);
+  background: rgba(40, 167, 69, 0.12);
   border: 1px solid rgba(40, 167, 69, 0.4);
-  color: #d4edda;
+  color: #0f5132;
 }
 
 .table-wrapper {
@@ -45,6 +71,10 @@ table.patient-table th,
 table.patient-table td {
   padding: 0.5em 0.75em;
   vertical-align: top;
+}
+
+table.patient-table th {
+  font-weight: 700;
 }
 
 .panel {
@@ -92,6 +122,12 @@ table.patient-table td {
   text-align: left;
 }
 
+.login-hint {
+  margin-top: 2em;
+  font-size: 0.85em;
+  opacity: 0.8;
+}
+
 .hidden {
   display: none !important;
 }
@@ -111,13 +147,15 @@ table.patient-table td {
 }
 
 .badge-admin {
-  background: rgba(111, 66, 193, 0.3);
-  border: 1px solid rgba(111, 66, 193, 0.6);
+  background: rgba(111, 66, 193, 0.15);
+  border: 1px solid rgba(111, 66, 193, 0.5);
+  color: #432874;
 }
 
 .badge-staff {
-  background: rgba(23, 162, 184, 0.3);
-  border: 1px solid rgba(23, 162, 184, 0.6);
+  background: rgba(23, 162, 184, 0.15);
+  border: 1px solid rgba(23, 162, 184, 0.5);
+  color: #055160;
 }
 
 .history-list {
@@ -128,9 +166,206 @@ table.patient-table td {
 
 .history-list li {
   padding: 0.75em 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .history-list li:last-child {
   border-bottom: none;
+}
+
+.search-form {
+  margin-bottom: 1.5em;
+}
+
+.search-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1em;
+  align-items: flex-end;
+}
+
+.search-fields .search-input {
+  height: 2.75em;
+  padding: 0 0.75em;
+  line-height: 2.75em;
+  box-sizing: border-box;
+}
+
+.search-fields .actions {
+  margin: 0;
+  flex: 0 0 auto;
+}
+
+.panel .button,
+.panel button.button,
+.pagination-bar .button {
+  padding: 0.65em 1.35em;
+  font-size: 0.9em;
+  line-height: 1.4;
+}
+
+.pagination-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1em;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pagination-bar #page-info {
+  flex: 1 1 auto;
+  text-align: center;
+  font-size: 0.9em;
+}
+
+.search-fields > div {
+  flex: 1 1 12em;
+  min-width: 10em;
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5em;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.modal-overlay[hidden] {
+  display: none !important;
+}
+
+.modal-dialog {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 5px;
+  width: 100%;
+  max-width: 36em;
+  max-height: 90vh;
+  overflow: hidden;
+  padding: 2.25em 1.75em 0;
+  box-shadow: 0 0.5em 2em rgba(0, 0, 0, 0.25);
+  text-align: left;
+}
+
+.modal-body {
+  overflow-y: auto;
+  padding-bottom: 1.5em;
+}
+
+.modal-header {
+  flex: 0 0 auto;
+  margin-bottom: 0.75em;
+  padding-right: 1.75em;
+}
+
+.modal-header h3 {
+  margin: 0;
+}
+
+.modal-close {
+  position: absolute;
+  top: 0.2em;
+  right: 0.2em;
+  min-width: 0;
+  width: auto;
+  height: auto;
+  line-height: 1;
+  padding: 0.2em 0.35em;
+  background: none !important;
+  background-image: none !important;
+  border: none !important;
+  border-radius: 0;
+  color: #555 !important;
+  cursor: pointer;
+  font-size: 1.75em;
+  font-weight: 400;
+  letter-spacing: 0;
+  box-shadow: none;
+  z-index: 2;
+}
+
+.modal-close:hover,
+.modal-close:active {
+  background: none !important;
+  background-image: none !important;
+  color: #555 !important;
+  opacity: 0.7;
+}
+
+.modal-actions {
+  margin-top: 1em;
+  margin-left: 0;
+  width: 100%;
+}
+
+.modal-dialog .button {
+  padding: 0.65em 1.35em;
+  font-size: 0.9em;
+  line-height: 1.4;
+}
+
+.dashboard-tabs {
+  text-align: left;
+}
+
+.tab-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5em;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.tab-list li {
+  margin: 0;
+  padding: 0;
+}
+
+.tab-btn {
+  display: block;
+  padding: 0.65em 1.25em;
+  margin: 0 0 -2px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.95em;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.4;
+  opacity: 0.65;
+  box-shadow: none;
+}
+
+.tab-btn:hover,
+.tab-btn:focus {
+  opacity: 1;
+  background: none;
+}
+
+.tab-btn.active {
+  opacity: 1;
+  border-bottom-color: #37c0fb;
+  color: #37c0fb;
+}
+
+.tab-panel {
+  margin-bottom: 2em;
+}
+
+.tab-panel[hidden] {
+  display: none !important;
 }

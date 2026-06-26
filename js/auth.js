@@ -39,14 +39,14 @@
     async requireRole(allowedRoles, redirectTo) {
       const profile = await this.getProfile();
       if (!profile || !allowedRoles.includes(profile.role)) {
-        window.location.href = redirectTo || '../login.html';
+        window.location.href = redirectTo || App.siteUrl('login.html');
         return null;
       }
       return profile;
     },
 
     dashboardPathForRole(role) {
-      return role === 'admin' ? '../admin/' : '../staff/';
+      return App.siteUrl(role === 'admin' ? 'admin/' : 'staff/');
     }
   };
 

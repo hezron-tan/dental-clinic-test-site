@@ -13,7 +13,9 @@ test.describe('Admin dashboard', () => {
 
   test('shows clinic form and patient table', async ({ page }) => {
     await expect(page.getByTestId('clinic-form')).toBeVisible();
+    await page.getByTestId('tab-patients').click();
     await expect(page.getByTestId('patient-table')).toBeVisible();
+    await expect(page.getByTestId('patient-pagination')).toBeVisible();
   });
 
   test('updates clinic tagline', async ({ page }) => {
@@ -29,7 +31,9 @@ test.describe('Admin dashboard', () => {
 
   test('adds a new patient', async ({ page }) => {
     const suffix = String(Date.now()).slice(-6);
+    await page.getByTestId('tab-patients').click();
     await page.getByTestId('add-patient').click();
+    await expect(page.getByTestId('patient-form-overlay')).toBeVisible();
     await page.getByTestId('patient-first-name').fill('Test');
     await page.getByTestId('patient-last-name').fill(`Patient${suffix}`);
     await page.getByTestId('patient-email').fill(`test.${suffix}@example.test`);

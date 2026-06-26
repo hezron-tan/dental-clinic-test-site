@@ -2,7 +2,7 @@
 
 A free-tier dental clinic practice site for **Playwright** (UI + API), **K6** (performance), and manual exploration.
 
-- **Public site** — clinic name, address, contact, hours (Stellar template by HTML5 UP)
+- **Public site** — clinic name, address, contact, hours ([Arcana](https://html5up.net/arcana) template by HTML5 UP)
 - **Staff login** — role-based access (`admin` vs `staff`)
 - **Admin** — edit clinic info, manage patients, storage usage warning at 50%
 - **Staff** — view/edit patients and visit history
@@ -166,4 +166,4 @@ Use the `access_token` from the response as `Authorization: Bearer ...` for prot
 
 ## License
 
-Stellar template: [CCA 3.0](https://html5up.net/license). App code: use freely for practice and testing.
+Arcana template: [CCA 3.0](https://html5up.net/license). App code: use freely for practice and testing.

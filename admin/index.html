@@ -1,122 +1,152 @@
 <!DOCTYPE HTML>
+<!--
+	Arcana by HTML5 UP — adapted for Bright Smile Dental Clinic
+	html5up.net | @ajlkn | CCA 3.0 license
+-->
 <html>
 	<head>
 		<title>Admin Dashboard — Dental Clinic</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="../assets/css/main.css" />
-		<noscript><link rel="stylesheet" href="../assets/css/noscript.css" /></noscript>
 		<link rel="stylesheet" href="../css/app.css" />
 	</head>
-	<body class="is-preload">
+	<body class="is-preload admin-dashboard">
+		<div id="page-wrapper">
 
-		<div id="wrapper">
-			<header id="header">
-				<h1>Admin Dashboard</h1>
-				<p>
-					<span id="user-greeting" data-testid="user-greeting"></span>
-					<span id="user-role" class="badge"></span>
-				</p>
-			</header>
-
-			<center style="margin-bottom:40px">
+			<div id="header">
+				<h1><a href="../index.html" id="logo">Bright Smile <em>Dental Clinic</em></a></h1>
 				<nav id="nav">
 					<ul>
-						<li><a href="../index.html">Public Site</a></li>
-						<li><a href="../staff/">Staff View</a></li>
 						<li><a href="#" id="logout-btn" data-testid="logout-btn">Logout</a></li>
 					</ul>
 				</nav>
-			</center>
+			</div>
 
-			<div id="main">
-				<section class="main">
-					<div id="storage-banner" class="alert alert-warning storage-banner" hidden></div>
-					<div id="admin-alert" class="alert" hidden data-testid="admin-alert"></div>
+			<section class="wrapper style1">
+				<div class="container">
+					<div id="content">
+						<article>
+							<header>
+								<h2>Admin Dashboard</h2>
+								<p>
+									<span id="user-greeting" data-testid="user-greeting"></span>
+									<span id="user-role" class="badge"></span>
+								</p>
+							</header>
 
-					<div class="panel">
-						<h2>Clinic Information</h2>
-						<p>Changes appear on the public homepage immediately.</p>
-						<form id="clinic-form" class="form-grid" data-testid="clinic-form">
-							<label for="name">Clinic Name</label>
-							<input type="text" id="name" name="name" required data-testid="clinic-name-input" />
+							<div id="storage-banner" class="alert alert-warning storage-banner" hidden></div>
+							<div id="admin-alert" class="alert" hidden data-testid="admin-alert"></div>
 
-							<label for="tagline">Tagline</label>
-							<input type="text" id="tagline" name="tagline" data-testid="clinic-tagline-input" />
-
-							<label for="address">Address</label>
-							<input type="text" id="address" name="address" data-testid="clinic-address-input" />
-
-							<label for="phone">Phone</label>
-							<input type="text" id="phone" name="phone" data-testid="clinic-phone-input" />
-
-							<label for="email">Email</label>
-							<input type="email" id="email" name="email" data-testid="clinic-email-input" />
-
-							<label for="hours">Office Hours</label>
-							<input type="text" id="hours" name="hours" data-testid="clinic-hours-input" />
-
-							<ul class="actions" style="margin-top:1em">
-								<li><button type="submit" class="button primary" data-testid="save-clinic">Save Clinic Info</button></li>
-							</ul>
-						</form>
-					</div>
-
-					<div class="panel">
-						<div class="toolbar">
-							<h2>Patients</h2>
-							<ul class="actions">
-								<li><button type="button" class="button primary" id="add-patient-btn" data-testid="add-patient">Add Patient</button></li>
-							</ul>
-						</div>
-
-						<div class="table-wrapper">
-							<table class="patient-table" id="patient-table" data-testid="patient-table">
-								<thead>
-									<tr>
-										<th>Name</th>
-										<th>Phone</th>
-										<th>Email</th>
-										<th>Actions</th>
-									</tr>
-								</thead>
-								<tbody></tbody>
-							</table>
-						</div>
-
-						<div id="patient-form-panel" class="panel" hidden>
-							<h3 id="patient-form-title">Add Patient</h3>
-							<form id="patient-form" class="form-grid" data-testid="patient-form">
-								<label>First Name</label>
-								<input type="text" name="first_name" required data-testid="patient-first-name" />
-								<label>Last Name</label>
-								<input type="text" name="last_name" required data-testid="patient-last-name" />
-								<label>Date of Birth</label>
-								<input type="date" name="date_of_birth" data-testid="patient-dob" />
-								<label>Email</label>
-								<input type="email" name="email" data-testid="patient-email" />
-								<label>Phone</label>
-								<input type="text" name="phone" data-testid="patient-phone" />
-								<label>Address</label>
-								<input type="text" name="address" data-testid="patient-address" />
-								<label>Emergency Contact Name</label>
-								<input type="text" name="emergency_contact_name" />
-								<label>Emergency Contact Phone</label>
-								<input type="text" name="emergency_contact_phone" />
-								<label>Notes</label>
-								<textarea name="notes" rows="3"></textarea>
-								<ul class="actions" style="margin-top:1em">
-									<li><button type="submit" class="button primary" data-testid="save-patient">Save</button></li>
-									<li><button type="button" class="button" id="cancel-patient-btn">Cancel</button></li>
+							<div class="dashboard-tabs" data-testid="admin-tabs">
+								<ul class="tab-list" role="tablist">
+									<li><button type="button" class="tab-btn active" data-tab="clinic" role="tab" aria-selected="true" data-testid="tab-clinic">Clinic Information</button></li>
+									<li><button type="button" class="tab-btn" data-tab="patients" role="tab" aria-selected="false" data-testid="tab-patients">Patients</button></li>
 								</ul>
-							</form>
-						</div>
+
+								<div class="tab-panel active" id="tab-clinic" role="tabpanel" data-testid="tab-panel-clinic">
+									<div class="panel">
+										<p>Changes appear on the public homepage immediately.</p>
+										<form id="clinic-form" class="form-grid" data-testid="clinic-form">
+											<label for="name">Clinic Name</label>
+											<input type="text" id="name" name="name" required data-testid="clinic-name-input" />
+
+											<label for="tagline">Tagline</label>
+											<input type="text" id="tagline" name="tagline" data-testid="clinic-tagline-input" />
+
+											<label for="address">Address</label>
+											<input type="text" id="address" name="address" data-testid="clinic-address-input" />
+
+											<label for="phone">Phone</label>
+											<input type="text" id="phone" name="phone" data-testid="clinic-phone-input" />
+
+											<label for="email">Email</label>
+											<input type="email" id="email" name="email" data-testid="clinic-email-input" />
+
+											<label for="hours">Office Hours</label>
+											<input type="text" id="hours" name="hours" data-testid="clinic-hours-input" />
+
+											<ul class="actions" style="margin-top:1em">
+												<li><button type="submit" class="button primary" data-testid="save-clinic">Save Clinic Info</button></li>
+											</ul>
+										</form>
+									</div>
+								</div>
+
+								<div class="tab-panel" id="tab-patients" role="tabpanel" hidden data-testid="tab-panel-patients">
+									<div class="panel">
+										<div class="toolbar">
+											<ul class="actions">
+												<li><button type="button" class="button primary" id="add-patient-btn" data-testid="add-patient">Add Patient</button></li>
+											</ul>
+										</div>
+
+										<div class="table-wrapper">
+											<table class="patient-table" id="patient-table" data-testid="patient-table">
+												<thead>
+													<tr>
+														<th>Name</th>
+														<th>Phone</th>
+														<th>Email</th>
+														<th>Actions</th>
+													</tr>
+												</thead>
+												<tbody></tbody>
+											</table>
+										</div>
+
+										<div class="pagination-bar" id="patient-pagination" data-testid="patient-pagination">
+											<button type="button" class="button" id="prev-page" data-testid="prev-page" disabled>Previous</button>
+											<span id="page-info" data-testid="page-info"></span>
+											<button type="button" class="button" id="next-page" data-testid="next-page" disabled>Next</button>
+										</div>
+									</div>
+								</div>
+							</div>
+						</article>
 					</div>
-				</section>
+				</div>
+			</section>
+
+		</div>
+
+		<div id="patient-form-overlay" class="modal-overlay" hidden aria-hidden="true" data-testid="patient-form-overlay">
+			<div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="patient-form-title">
+				<button type="button" class="modal-close" id="close-patient-overlay" aria-label="Close" data-testid="close-patient-overlay">&times;</button>
+				<div class="modal-header">
+					<h3 id="patient-form-title">Add Patient</h3>
+				</div>
+				<div class="modal-body">
+					<form id="patient-form" class="form-grid" data-testid="patient-form">
+						<label>First Name</label>
+						<input type="text" name="first_name" required data-testid="patient-first-name" />
+						<label>Last Name</label>
+						<input type="text" name="last_name" required data-testid="patient-last-name" />
+						<label>Date of Birth</label>
+						<input type="date" name="date_of_birth" data-testid="patient-dob" />
+						<label>Email</label>
+						<input type="email" name="email" data-testid="patient-email" />
+						<label>Phone</label>
+						<input type="text" name="phone" data-testid="patient-phone" />
+						<label>Address</label>
+						<input type="text" name="address" data-testid="patient-address" />
+						<label>Emergency Contact Name</label>
+						<input type="text" name="emergency_contact_name" />
+						<label>Emergency Contact Phone</label>
+						<input type="text" name="emergency_contact_phone" />
+						<label>Notes</label>
+						<textarea name="notes" rows="3"></textarea>
+						<ul class="actions special modal-actions">
+							<li><button type="submit" class="button primary" data-testid="save-patient">Save</button></li>
+							<li><button type="button" class="button" id="cancel-patient-btn">Cancel</button></li>
+						</ul>
+					</form>
+				</div>
 			</div>
 		</div>
 
 		<script src="../assets/js/jquery.min.js"></script>
+		<script src="../assets/js/jquery.dropotron.min.js"></script>
 		<script src="../assets/js/browser.min.js"></script>
 		<script src="../assets/js/breakpoints.min.js"></script>
 		<script src="../assets/js/util.js"></script>
