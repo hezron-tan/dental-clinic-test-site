@@ -81,6 +81,19 @@
 											</ul>
 										</div>
 
+										<form id="patient-search-form" class="search-form" data-testid="patient-search">
+											<div class="search-fields">
+												<div>
+													<label for="search-name">Search by name</label>
+													<input type="text" id="search-name" class="search-input" data-testid="search-name" placeholder="First or last name" />
+												</div>
+												<ul class="actions">
+													<li><button type="submit" class="button" data-testid="search-patients">Search</button></li>
+													<li><button type="button" class="button" id="clear-search-btn" data-testid="clear-search">Clear</button></li>
+												</ul>
+											</div>
+										</form>
+
 										<div class="table-wrapper">
 											<table class="patient-table" id="patient-table" data-testid="patient-table">
 												<thead>

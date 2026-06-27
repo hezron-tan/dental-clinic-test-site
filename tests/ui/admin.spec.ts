@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
-import type { PatientFormData } from '../models';
 import { hasAdminCredentials } from '../helpers/supabase';
+import { buildClinicUpdate, buildPatient, patientRowMatch } from '../helpers/test-data';
 import { AdminDashboardPage, LoginPage, PublicPage } from '../pages';
 
 const credentialsMessage =
@@ -29,31 +29,22 @@ test.describe('Admin dashboard', () => {
   test('updates clinic tagline', async ({ page }) => {
     const adminPage = new AdminDashboardPage(page);
     const publicPage = new PublicPage(page);
-    const tagline = `Automation test tagline ${Date.now()}`;
+    const update = buildClinicUpdate();
 
-    await adminPage.updateClinicInfo({ tagline });
+    await adminPage.updateClinicInfo(update);
 
     await publicPage.open();
-    await expect(publicPage.clinicTagline).toHaveText(tagline);
+    await expect(publicPage.clinicTagline).toHaveText(update.tagline!);
   });
 
-  // Verifies an admin can add a new patient through the patients tab modal.
+  // Verifies an admin can add a new patient and find them via name search.
   test('adds a new patient', async ({ page }) => {
     const adminPage = new AdminDashboardPage(page);
-    const suffix = String(Date.now()).slice(-6);
-    const patient: PatientFormData = {
-      firstName: 'Test',
-      lastName: `Patient${suffix}`,
-      email: `test.${suffix}@example.test`,
-      phone: `(503) 555-${suffix.slice(0, 4)}`
-    };
+    const patient = buildPatient();
 
-    await adminPage.showPatientsTab();
-    await adminPage.addPatientButton.click();
-    await expect(adminPage.patientFormOverlay).toBeVisible();
-    await adminPage.patientForm.fillAndSubmit(patient);
+    await adminPage.addPatient(patient);
 
     await expect(adminPage.alert).toContainText(/saved/i);
-    await expect(adminPage.patientTable.rowByName(`Patient${suffix}`)).toBeVisible();
+    await adminPage.patientSearch.searchByName(patientRowMatch(patient));
   });
 });

@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import {
   getAccessToken,
+  hasAdminCredentials,
   requireCredentials,
   requireSupabaseEnv,
   staffEmail,
@@ -9,6 +10,8 @@ import {
   supabaseHeaders,
   supabaseUrl
 } from '../helpers/supabase';
+import { buildPatient } from '../helpers/test-data';
+import { createPatientViaApi, deletePatientViaApi, getStaffAccessToken } from '../helpers/patients-api';
 
 test.describe('Clinic API', () => {
   test.beforeEach(() => {
@@ -57,33 +60,29 @@ test.describe('Patients API', () => {
     expect(patients[0]).toHaveProperty('first_name');
   });
 
-  test('staff can create and delete a patient via REST', async ({ request }) => {
-    const token = await getAccessToken(staffEmail, staffPassword);
-    const suffix = String(Date.now()).slice(-6);
+  test('staff can create a patient but not delete via REST', async ({ request }) => {
+    test.skip(!hasAdminCredentials(), 'Set ADMIN_PASSWORD in .env for test cleanup');
 
-    const createRes = await request.post(`${supabaseUrl}/rest/v1/patients`, {
-      headers: {
-        ...supabaseHeaders(token),
-        Prefer: 'return=representation'
-      },
-      data: {
-        first_name: 'API',
-        last_name: `Test${suffix}`,
-        email: `api.${suffix}@example.test`
-      }
+    const patient = buildPatient();
+    const { id, data } = await createPatientViaApi(request, patient);
+
+    expect(data.lastName).toBe(patient.lastName);
+
+    const staffToken = await getStaffAccessToken();
+    const deleteRes = await request.delete(`${supabaseUrl}/rest/v1/patients?id=eq.${id}`, {
+      headers: supabaseHeaders(staffToken)
     });
 
-    expect(createRes.ok()).toBeTruthy();
-    const created = (await createRes.json())[0];
-    expect(created.last_name).toBe(`Test${suffix}`);
+    // PostgREST returns 204 even when RLS blocks the delete (0 rows affected).
+    expect(deleteRes.status()).toBeLessThan(300);
 
-    const deleteRes = await request.delete(
-      `${supabaseUrl}/rest/v1/patients?id=eq.${created.id}`,
-      { headers: supabaseHeaders(token) }
-    );
+    const verifyRes = await request.get(`${supabaseUrl}/rest/v1/patients?id=eq.${id}&select=id`, {
+      headers: supabaseHeaders(staffToken)
+    });
+    expect(verifyRes.ok()).toBeTruthy();
+    expect(await verifyRes.json()).toHaveLength(1);
 
-    // Staff cannot delete — only admin can. Expect failure for staff.
-    expect(deleteRes.status()).toBeGreaterThanOrEqual(400);
+    await deletePatientViaApi(request, id);
   });
 });
 
