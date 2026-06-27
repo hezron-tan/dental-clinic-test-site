@@ -2,14 +2,14 @@ import { faker } from '@faker-js/faker';
 import type { ClinicFormData, PatientFormData, VisitHistoryFormData } from '../models';
 
 const DENTAL_PROCEDURES = [
+  'Checkup',
   'Cleaning',
   'Filling',
-  'Root canal',
-  'Crown placement',
   'Extraction',
-  'Whitening',
-  'X-ray',
-  'Periodontal exam'
+  'Root Canal',
+  'Crown',
+  'X-Ray',
+  'Other'
 ] as const;
 
 /** Set a fixed seed when you need reproducible values (e.g. debugging a flaky test). */
@@ -46,6 +46,12 @@ export function toApiPatient(data: PatientFormData) {
 /** Substring used to locate a patient row in the dashboard table/search. */
 export function patientRowMatch(patient: PatientFormData): string {
   return patient.lastName;
+}
+
+/** Converts an ISO date (yyyy-mm-dd) to the dd/mm/yyyy format used by staff search. */
+export function toSearchDateOfBirth(isoDate: string): string {
+  const [year, month, day] = isoDate.split('-');
+  return `${day}/${month}/${year}`;
 }
 
 export function buildPatient(overrides: Partial<PatientFormData> = {}): PatientFormData {
