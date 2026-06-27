@@ -4,8 +4,42 @@
   const PAGE_SIZE = 10;
 
   let allPatients = [];
+  let filteredPatients = [];
   let currentPage = 1;
   let currentPatientId = null;
+
+  function getSearchFilters() {
+    return {
+      name: document.getElementById('search-name').value.trim().toLowerCase()
+    };
+  }
+
+  function matchesSearch(patient, filters) {
+    if (filters.name) {
+      const haystack = [
+        patient.first_name,
+        patient.last_name,
+        patient.first_name + ' ' + patient.last_name,
+        patient.last_name + ' ' + patient.first_name
+      ].join(' ').toLowerCase();
+
+      if (!haystack.includes(filters.name)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  function applyFilters(preservePage) {
+    const filters = getSearchFilters();
+    filteredPatients = allPatients.filter(function (patient) {
+      return matchesSearch(patient, filters);
+    });
+    if (!preservePage) {
+      currentPage = 1;
+    }
+  }
 
   async function loadStorageWarning() {
     try {
@@ -92,7 +126,7 @@
 
   function renderPatientTable() {
     const tbody = document.querySelector('#patient-table tbody');
-    const total = allPatients.length;
+    const total = filteredPatients.length;
     const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
     if (currentPage > totalPages) {
@@ -100,7 +134,7 @@
     }
 
     const start = (currentPage - 1) * PAGE_SIZE;
-    const pagePatients = allPatients.slice(start, start + PAGE_SIZE);
+    const pagePatients = filteredPatients.slice(start, start + PAGE_SIZE);
 
     if (!pagePatients.length) {
       tbody.innerHTML = '<tr><td colspan="4">No patients found.</td></tr>';
@@ -121,9 +155,7 @@
 
   async function loadPatients(preservePage) {
     allPatients = await Patients.list();
-    if (!preservePage) {
-      currentPage = 1;
-    }
+    applyFilters(preservePage);
     renderPatientTable();
   }
 
@@ -188,6 +220,19 @@
     }
   }
 
+  function handleSearch(e) {
+    e.preventDefault();
+    App.hideAlert('admin-alert');
+    applyFilters();
+    renderPatientTable();
+  }
+
+  function clearSearch() {
+    document.getElementById('search-name').value = '';
+    applyFilters();
+    renderPatientTable();
+  }
+
   document.addEventListener('DOMContentLoaded', async function () {
     const profile = await Auth.requireRole(['admin']);
     if (!profile) return;
@@ -197,7 +242,8 @@
     document.getElementById('user-role').textContent = profile.role;
     document.getElementById('user-role').className = 'badge badge-admin';
 
-    document.getElementById('logout-btn').addEventListener('click', async function () {
+    document.getElementById('logout-btn').addEventListener('click', async function (e) {
+      e.preventDefault();
       await Auth.signOut();
       window.location.href = App.siteUrl('login.html');
     });
@@ -214,6 +260,9 @@
     document.getElementById('add-patient-btn').addEventListener('click', function () {
       showPatientForm(null);
     });
+
+    document.getElementById('patient-search-form').addEventListener('submit', handleSearch);
+    document.getElementById('clear-search-btn').addEventListener('click', clearSearch);
 
     document.getElementById('cancel-patient-btn').addEventListener('click', hidePatientModal);
     document.getElementById('close-patient-overlay').addEventListener('click', hidePatientModal);
@@ -234,7 +283,7 @@
     });
 
     document.getElementById('next-page').addEventListener('click', function () {
-      const totalPages = Math.max(1, Math.ceil(allPatients.length / PAGE_SIZE));
+      const totalPages = Math.max(1, Math.ceil(filteredPatients.length / PAGE_SIZE));
       if (currentPage < totalPages) {
         currentPage += 1;
         renderPatientTable();

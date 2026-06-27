@@ -3,6 +3,7 @@ import type { ClinicFormData, PatientFormData } from '../models';
 import { LoginPage } from './login.page';
 import { PatientFormComponent } from './components/patient-form.component';
 import { PatientPaginationComponent } from './components/patient-pagination.component';
+import { PatientSearchComponent } from './components/patient-search.component';
 import { PatientTableComponent } from './components/patient-table.component';
 
 export class AdminDashboardPage {
@@ -10,12 +11,14 @@ export class AdminDashboardPage {
 
   readonly patientTable: PatientTableComponent;
   readonly patientPagination: PatientPaginationComponent;
+  readonly patientSearch: PatientSearchComponent;
   readonly patientForm: PatientFormComponent;
 
   constructor(private readonly page: Page) {
     this.patientTable = new PatientTableComponent(page);
     this.patientPagination = new PatientPaginationComponent(page);
     this.patientForm = new PatientFormComponent(page);
+    this.patientSearch = new PatientSearchComponent(page, this.patientsPanel);
   }
 
   get logoutButton(): Locator {
@@ -87,7 +90,7 @@ export class AdminDashboardPage {
   }
 
   get addPatientButton(): Locator {
-    return this.page.getByTestId('add-patient');
+    return this.patientsPanel.getByTestId('add-patient');
   }
 
   get patientFormOverlay(): Locator {
@@ -105,10 +108,12 @@ export class AdminDashboardPage {
   async openViaLogin(loginPage: LoginPage): Promise<void> {
     await loginPage.open();
     await loginPage.loginExpectingDashboard('admin');
+    await this.waitForClinicFormLoaded();
   }
 
   async logout(): Promise<void> {
     await this.logoutButton.click();
+    await this.page.waitForURL(/login\.html/, { timeout: 15_000 });
   }
 
   async showClinicTab(): Promise<void> {
@@ -116,7 +121,13 @@ export class AdminDashboardPage {
   }
 
   async showPatientsTab(): Promise<void> {
-    await this.patientsTab.click();
+    await expect(async () => {
+      const selected = await this.patientsTab.getAttribute('aria-selected');
+      if (selected !== 'true') {
+        await this.patientsTab.click();
+      }
+      await expect(this.patientsPanel).toBeVisible();
+    }).toPass({ timeout: 15_000 });
   }
 
   async waitForClinicFormLoaded(): Promise<void> {
@@ -157,6 +168,7 @@ export class AdminDashboardPage {
 
   async openAddPatientModal(): Promise<void> {
     await this.showPatientsTab();
+    await expect(this.addPatientButton).toBeVisible();
     await this.addPatientButton.click();
   }
 
