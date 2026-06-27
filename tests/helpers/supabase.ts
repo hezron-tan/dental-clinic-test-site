@@ -6,11 +6,30 @@ export const adminPassword = process.env.ADMIN_PASSWORD ?? '';
 export const staffEmail = process.env.STAFF_EMAIL ?? 'staff@clinic.test';
 export const staffPassword = process.env.STAFF_PASSWORD ?? '';
 
+/** True when a value is missing or still set to a template placeholder from .env.example. */
+export function isPlaceholderValue(value: string): boolean {
+  if (!value) {
+    return true;
+  }
+  return value.startsWith('your-') || value.includes('YOUR_PROJECT');
+}
+
 export function requireSupabaseEnv() {
   if (!supabaseUrl || !supabaseAnonKey) {
     return false;
   }
+  if (isPlaceholderValue(supabaseUrl) || isPlaceholderValue(supabaseAnonKey)) {
+    return false;
+  }
   return true;
+}
+
+export function hasAdminCredentials(): boolean {
+  return !isPlaceholderValue(adminPassword);
+}
+
+export function hasStaffCredentials(): boolean {
+  return !isPlaceholderValue(staffPassword);
 }
 
 export function requireCredentials(role: 'admin' | 'staff') {

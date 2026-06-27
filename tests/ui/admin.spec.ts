@@ -1,46 +1,59 @@
 import { expect, test } from '@playwright/test';
-import { adminEmail, adminPassword } from '../helpers/supabase';
+import type { PatientFormData } from '../models';
+import { hasAdminCredentials } from '../helpers/supabase';
+import { AdminDashboardPage, LoginPage, PublicPage } from '../pages';
+
+const credentialsMessage =
+  'Set ADMIN_PASSWORD in .env to match your Supabase admin user (see .env.example).';
 
 test.describe('Admin dashboard', () => {
   test.beforeEach(async ({ page }) => {
-    test.skip(!adminPassword, 'Set ADMIN_PASSWORD in .env');
-    await page.goto('/login.html');
-    await page.getByTestId('login-email').fill(adminEmail);
-    await page.getByTestId('login-password').fill(adminPassword);
-    await page.getByTestId('login-submit').click();
-    await expect(page).toHaveURL(/admin\/?/);
+    test.skip(!hasAdminCredentials(), credentialsMessage);
+
+    const loginPage = new LoginPage(page);
+    const adminPage = new AdminDashboardPage(page);
+    await adminPage.openViaLogin(loginPage);
   });
 
+  // Verifies the admin dashboard shows the clinic form and patient management tab.
   test('shows clinic form and patient table', async ({ page }) => {
-    await expect(page.getByTestId('clinic-form')).toBeVisible();
-    await page.getByTestId('tab-patients').click();
-    await expect(page.getByTestId('patient-table')).toBeVisible();
-    await expect(page.getByTestId('patient-pagination')).toBeVisible();
+    const adminPage = new AdminDashboardPage(page);
+
+    await expect(adminPage.clinicForm).toBeVisible();
+    await adminPage.showPatientsTab();
+    await expect(adminPage.patientTable.table).toBeVisible();
+    await expect(adminPage.patientPagination.bar).toBeVisible();
   });
 
+  // Verifies updating the clinic tagline saves successfully and appears on the public homepage.
   test('updates clinic tagline', async ({ page }) => {
+    const adminPage = new AdminDashboardPage(page);
+    const publicPage = new PublicPage(page);
     const tagline = `Automation test tagline ${Date.now()}`;
-    await page.getByTestId('clinic-tagline-input').fill(tagline);
-    await page.getByTestId('save-clinic').click();
 
-    await expect(page.getByTestId('admin-alert')).toContainText(/saved/i);
+    await adminPage.updateClinicInfo({ tagline });
 
-    await page.goto('/');
-    await expect(page.getByTestId('clinic-tagline')).toHaveText(tagline);
+    await publicPage.open();
+    await expect(publicPage.clinicTagline).toHaveText(tagline);
   });
 
+  // Verifies an admin can add a new patient through the patients tab modal.
   test('adds a new patient', async ({ page }) => {
+    const adminPage = new AdminDashboardPage(page);
     const suffix = String(Date.now()).slice(-6);
-    await page.getByTestId('tab-patients').click();
-    await page.getByTestId('add-patient').click();
-    await expect(page.getByTestId('patient-form-overlay')).toBeVisible();
-    await page.getByTestId('patient-first-name').fill('Test');
-    await page.getByTestId('patient-last-name').fill(`Patient${suffix}`);
-    await page.getByTestId('patient-email').fill(`test.${suffix}@example.test`);
-    await page.getByTestId('patient-phone').fill(`(503) 555-${suffix.slice(0, 4)}`);
-    await page.getByTestId('save-patient').click();
+    const patient: PatientFormData = {
+      firstName: 'Test',
+      lastName: `Patient${suffix}`,
+      email: `test.${suffix}@example.test`,
+      phone: `(503) 555-${suffix.slice(0, 4)}`
+    };
 
-    await expect(page.getByTestId('admin-alert')).toContainText(/saved/i);
-    await expect(page.getByTestId('patient-row').filter({ hasText: `Patient${suffix}` })).toBeVisible();
+    await adminPage.showPatientsTab();
+    await adminPage.addPatientButton.click();
+    await expect(adminPage.patientFormOverlay).toBeVisible();
+    await adminPage.patientForm.fillAndSubmit(patient);
+
+    await expect(adminPage.alert).toContainText(/saved/i);
+    await expect(adminPage.patientTable.rowByName(`Patient${suffix}`)).toBeVisible();
   });
 });
