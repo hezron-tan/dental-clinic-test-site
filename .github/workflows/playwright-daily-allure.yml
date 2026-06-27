@@ -1,16 +1,15 @@
-name: Playwright Tests
+name: Daily Playwright + Allure
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  schedule:
+    # 06:00 UTC every day
+    - cron: '0 6 * * *'
   workflow_dispatch:
 
 jobs:
-  test:
+  test-and-publish-allure:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -50,22 +49,43 @@ jobs:
           CI: true
         run: npm test
 
+      - name: Load Allure history from reports repo
+        if: always()
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ secrets.ALLURE_REPORTS_REPO }}
+          ref: gh-pages
+          path: gh-pages
+          ssh-key: ${{ secrets.ALLURE_REPORTS_DEPLOY_KEY }}
+
+      - name: Restore Allure history
+        if: always()
+        run: |
+          if [ -d gh-pages/history ]; then
+            cp -r gh-pages/history allure-results/history
+          fi
+
       - name: Generate Allure report
         if: always()
         run: npm run allure:generate
 
-      - name: Upload Allure report
+      - name: Upload Allure report artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allure-report
-          path: allure-report/
-          retention-days: 14
+          name: allure-report-${{ github.run_number }}
+          path: |
+            allure-report/
+            allure-results/
+          retention-days: 30
 
-      - name: Upload Playwright report
-        if: failure()
-        uses: actions/upload-artifact@v4
+      - name: Publish Allure to reports repo (GitHub Pages)
+        if: always()
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 7
+          deploy_key: ${{ secrets.ALLURE_REPORTS_DEPLOY_KEY }}
+          external_repository: ${{ secrets.ALLURE_REPORTS_REPO }}
+          publish_branch: gh-pages
+          publish_dir: ./allure-report
+          keep_files: false
