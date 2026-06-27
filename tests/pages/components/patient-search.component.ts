@@ -33,8 +33,9 @@ export class PatientSearchComponent {
     }
     if (criteria.dateOfBirth !== undefined) {
       await this.dateOfBirthInput.fill(criteria.dateOfBirth);
+      await expect(this.dateOfBirthInput).toHaveValue(criteria.dateOfBirth);
     }
-    await this.form.evaluate((form) => (form as HTMLFormElement).requestSubmit());
+    await this.searchButton.click();
   }
 
   async searchByName(name: string): Promise<void> {
@@ -44,8 +45,13 @@ export class PatientSearchComponent {
     });
   }
 
-  async searchByDateOfBirth(dob: string): Promise<void> {
+  async searchByDateOfBirth(dob: string, expectedName?: string): Promise<void> {
     await this.search({ dateOfBirth: dob });
+    if (expectedName !== undefined) {
+      await expect(this.root.getByTestId('patient-row').filter({ hasText: expectedName }).first()).toBeVisible({
+        timeout: 10_000
+      });
+    }
   }
 
   async clear(): Promise<void> {

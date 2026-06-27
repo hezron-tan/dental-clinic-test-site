@@ -99,7 +99,10 @@ export class StaffDashboardPage {
   }
 
   async waitForReady(): Promise<void> {
-    await expect(this.patientTable.table).toBeVisible({ timeout: 15_000 });
+    await expect(this.userGreeting).not.toBeEmpty({ timeout: 15_000 });
+    await expect(this.patientPagination.pageInfo).toContainText(/showing|page/i, {
+      timeout: 15_000
+    });
     await expect(this.addPatientButton).toBeEnabled();
   }
 
