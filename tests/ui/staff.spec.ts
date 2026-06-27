@@ -1,62 +1,74 @@
 import { expect, test } from '@playwright/test';
-import { staffEmail, staffPassword } from '../helpers/supabase';
+import type { VisitHistoryFormData } from '../models';
+import { hasStaffCredentials } from '../helpers/supabase';
+import { LoginPage, StaffDashboardPage } from '../pages';
+
+const credentialsMessage =
+  'Set STAFF_PASSWORD in .env to match your Supabase staff user (see .env.example).';
 
 test.describe('Staff dashboard', () => {
   test.beforeEach(async ({ page }) => {
-    test.skip(!staffPassword, 'Set STAFF_PASSWORD in .env');
-    await page.goto('/login.html');
-    await page.getByTestId('login-email').fill(staffEmail);
-    await page.getByTestId('login-password').fill(staffPassword);
-    await page.getByTestId('login-submit').click();
-    await expect(page).toHaveURL(/staff\/?/);
+    test.skip(!hasStaffCredentials(), credentialsMessage);
+
+    const loginPage = new LoginPage(page);
+    const staffPage = new StaffDashboardPage(page);
+    await staffPage.openViaLogin(loginPage);
   });
 
+  // Verifies the patient list loads and staff can view details without delete access.
   test('lists patients in a table and shows details', async ({ page }) => {
-    await expect(page.getByTestId('patient-table')).toBeVisible();
-    await expect(page.getByTestId('patient-pagination')).toBeVisible();
+    const staffPage = new StaffDashboardPage(page);
 
-    const johnsonRow = page.getByTestId('patient-row').filter({ hasText: 'Johnson' }).first();
-    await johnsonRow.getByTestId('edit-patient').click();
+    await expect(staffPage.patientTable.table).toBeVisible();
+    await expect(staffPage.patientPagination.bar).toBeVisible();
 
-    await expect(page.getByTestId('patient-details')).toBeVisible();
-    await expect(page.getByTestId('history-list')).toBeVisible();
-    await expect(page.getByTestId('history-form')).toBeVisible();
+    await staffPage.openPatientDetails('Johnson');
+
+    await expect(staffPage.patientDetails).toBeVisible();
+    await expect(staffPage.historyForm.historyList).toBeVisible();
+    await expect(staffPage.historyForm.form).toBeVisible();
     await expect(page.getByTestId('delete-patient')).toHaveCount(0);
   });
 
+  // Verifies staff can update a patient's phone number from the details panel.
   test('updates patient phone number', async ({ page }) => {
-    const mendezRow = page.getByTestId('patient-row').filter({ hasText: 'Mendez' }).first();
-    await mendezRow.getByTestId('edit-patient').click();
-    await expect(page.getByTestId('patient-details')).toBeVisible();
-
+    const staffPage = new StaffDashboardPage(page);
     const uniquePhone = `(503) 555-${String(Date.now()).slice(-4)}`;
-    await page.getByTestId('patient-phone').fill(uniquePhone);
-    await page.getByTestId('save-patient').click();
 
-    await expect(page.getByTestId('staff-alert')).toContainText(/updated/i);
-    await expect(page.getByTestId('detail-phone')).toHaveText(uniquePhone);
+    await staffPage.openPatientDetails('Mendez');
+    await expect(staffPage.patientDetails).toBeVisible();
+
+    await staffPage.patientForm.phoneInput.fill(uniquePhone);
+    await staffPage.patientForm.submit();
+
+    await expect(staffPage.alert).toContainText(/updated/i);
+    await expect(staffPage.detailPhone).toHaveText(uniquePhone);
   });
 
+  // Verifies staff can add a visit history record for an existing patient.
   test('adds a visit history record', async ({ page }) => {
-    const chenRow = page.getByTestId('patient-row').filter({ hasText: 'Chen' }).first();
-    await chenRow.getByTestId('edit-patient').click();
+    const staffPage = new StaffDashboardPage(page);
+    const visit: VisitHistoryFormData = {
+      visitDate: new Date().toISOString().slice(0, 10),
+      procedure: 'Cleaning',
+      description: 'Playwright automated test visit',
+      dentist: 'Dr. Test'
+    };
 
-    const today = new Date().toISOString().slice(0, 10);
-    await page.getByTestId('history-date').fill(today);
-    await page.getByTestId('history-procedure').selectOption('Cleaning');
-    await page.getByTestId('history-description').fill('Playwright automated test visit');
-    await page.getByTestId('history-dentist').fill('Dr. Test');
-    await page.getByTestId('add-history').click();
+    await staffPage.openPatientDetails('Chen');
+    await staffPage.addVisitHistory(visit);
 
-    await expect(page.getByTestId('staff-alert')).toContainText(/added/i);
-    await expect(page.getByTestId('history-entry').first()).toContainText('Cleaning');
+    await expect(staffPage.alert).toContainText(/added/i);
+    await expect(staffPage.historyForm.historyEntries.first()).toContainText('Cleaning');
   });
 
+  // Verifies the patient search form filters results by name.
   test('searches patients by name', async ({ page }) => {
-    await page.getByTestId('search-name').fill('Johnson');
-    await page.getByTestId('search-patients').click();
+    const staffPage = new StaffDashboardPage(page);
 
-    const rows = page.getByTestId('patient-row');
+    await staffPage.patientSearch.searchByName('Johnson');
+
+    const rows = staffPage.patientTable.rows;
     await expect(rows).not.toHaveCount(0);
     await expect(rows.first()).toContainText('Johnson');
   });

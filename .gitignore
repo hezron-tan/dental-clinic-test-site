@@ -8,3 +8,7 @@ test-results/
 blob-report/
 .DS_Store
 Thumbs.db
+allure-results/
+allure-report/
+allure-reports-deploy
+allure-reports-deploy.pub
