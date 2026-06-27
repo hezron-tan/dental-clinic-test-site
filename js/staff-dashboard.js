@@ -267,7 +267,8 @@
     document.getElementById('user-role').className =
       'badge badge-' + (profile.role === 'admin' ? 'admin' : 'staff');
 
-    document.getElementById('logout-btn').addEventListener('click', async function () {
+    document.getElementById('logout-btn').addEventListener('click', async function (e) {
+      e.preventDefault();
       await Auth.signOut();
       window.location.href = App.siteUrl('login.html');
     });

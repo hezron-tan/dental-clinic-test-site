@@ -1,4 +1,4 @@
-import type { Locator, Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 import type { PatientFormData, VisitHistoryFormData } from '../models';
 import { LoginPage } from './login.page';
 import { HistoryFormComponent } from './components/history-form.component';
@@ -57,31 +57,31 @@ export class StaffDashboardPage {
   }
 
   get addPatientFirstNameInput(): Locator {
-    return this.page.getByTestId('add-patient-first-name');
+    return this.addPatientOverlay.getByTestId('add-patient-first-name');
   }
 
   get addPatientLastNameInput(): Locator {
-    return this.page.getByTestId('add-patient-last-name');
+    return this.addPatientOverlay.getByTestId('add-patient-last-name');
   }
 
   get addPatientDateOfBirthInput(): Locator {
-    return this.page.getByTestId('add-patient-dob');
+    return this.addPatientOverlay.getByTestId('add-patient-dob');
   }
 
   get addPatientEmailInput(): Locator {
-    return this.page.getByTestId('add-patient-email');
+    return this.addPatientOverlay.getByTestId('add-patient-email');
   }
 
   get addPatientPhoneInput(): Locator {
-    return this.page.getByTestId('add-patient-phone');
+    return this.addPatientOverlay.getByTestId('add-patient-phone');
   }
 
   get addPatientAddressInput(): Locator {
-    return this.page.getByTestId('add-patient-address');
+    return this.addPatientOverlay.getByTestId('add-patient-address');
   }
 
   get saveNewPatientButton(): Locator {
-    return this.page.getByTestId('save-new-patient');
+    return this.addPatientOverlay.getByTestId('save-new-patient');
   }
 
   get closeAddPatientOverlayButton(): Locator {
@@ -95,14 +95,27 @@ export class StaffDashboardPage {
   async openViaLogin(loginPage: LoginPage): Promise<void> {
     await loginPage.open();
     await loginPage.loginExpectingDashboard('staff');
+    await this.waitForReady();
+  }
+
+  async waitForReady(): Promise<void> {
+    await expect(this.patientTable.table).toBeVisible({ timeout: 15_000 });
+    await expect(this.addPatientButton).toBeEnabled();
   }
 
   async logout(): Promise<void> {
     await this.logoutButton.click();
+    await this.page.waitForURL(/login\.html/, { timeout: 15_000 });
   }
 
   async openAddPatientModal(): Promise<void> {
-    await this.addPatientButton.click();
+    await expect(async () => {
+      if (await this.addPatientOverlay.isHidden()) {
+        await this.addPatientButton.click();
+      }
+      await expect(this.addPatientOverlay).toBeVisible();
+      await expect(this.addPatientFirstNameInput).toBeVisible();
+    }).toPass({ timeout: 15_000 });
   }
 
   async fillAddPatientForm(data: PatientFormData): Promise<void> {
