@@ -180,4 +180,40 @@ export class AdminDashboardPage {
   async closePatientModal(): Promise<void> {
     await this.closePatientOverlayButton.click();
   }
+
+  async editPatient(name: string, data: Partial<PatientFormData>): Promise<void> {
+    await this.showPatientsTab();
+    await this.patientSearch.searchByName(name);
+    await this.patientTable.clickEditForPatient(name);
+    await expect(this.patientFormOverlay).toBeVisible();
+
+    if (data.firstName !== undefined) {
+      await this.patientForm.firstNameInput.fill(data.firstName);
+    }
+    if (data.lastName !== undefined) {
+      await this.patientForm.lastNameInput.fill(data.lastName);
+    }
+    if (data.dateOfBirth !== undefined) {
+      await this.patientForm.dateOfBirthInput.fill(data.dateOfBirth);
+    }
+    if (data.email !== undefined) {
+      await this.patientForm.emailInput.fill(data.email);
+    }
+    if (data.phone !== undefined) {
+      await this.patientForm.phoneInput.fill(data.phone);
+    }
+    if (data.address !== undefined) {
+      await this.patientForm.addressInput.fill(data.address);
+    }
+
+    await this.patientForm.submit();
+  }
+
+  async deletePatient(name: string): Promise<void> {
+    await this.showPatientsTab();
+    await this.patientSearch.searchByName(name);
+    this.page.once('dialog', (dialog) => dialog.accept());
+    await this.patientTable.clickDeleteForPatient(name);
+    await expect(this.alert).toContainText(/deleted/i, { timeout: 10_000 });
+  }
 }

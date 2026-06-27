@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { hasStaffCredentials } from '../helpers/supabase';
-import { buildPatient, buildVisitHistory, patientRowMatch, portlandPhone } from '../helpers/test-data';
+import { buildPatient, buildVisitHistory, patientRowMatch, portlandPhone, toSearchDateOfBirth } from '../helpers/test-data';
 import { LoginPage, StaffDashboardPage } from '../pages';
 import type { PatientFormData } from '../models';
 
@@ -79,5 +79,70 @@ test.describe('Staff dashboard', () => {
 
     await expect(staffPage.patientTable.rowByName(patientRowMatch(targetPatient))).toBeVisible();
     await expect(staffPage.patientTable.rowByName(patientRowMatch(otherPatient))).toHaveCount(0);
+  });
+
+  // Verifies the patient search form filters results by date of birth.
+  test('searches patients by date of birth', async ({ page }) => {
+    const staffPage = new StaffDashboardPage(page);
+    const patient = await addTestPatient(staffPage, {
+      dateOfBirth: '1985-06-15'
+    });
+
+    await staffPage.patientSearch.clear();
+    await staffPage.patientSearch.searchByDateOfBirth(
+      toSearchDateOfBirth(patient.dateOfBirth!),
+      patientRowMatch(patient)
+    );
+    await expect(staffPage.patientTable.rowByName(patientRowMatch(patient))).toBeVisible();
+  });
+
+  // Verifies clearing search filters restores the full patient list.
+  test('clears search filters', async ({ page }) => {
+    const staffPage = new StaffDashboardPage(page);
+    const patient = await addTestPatient(staffPage);
+
+    await staffPage.patientSearch.searchByName(patientRowMatch(patient));
+    await expect(staffPage.patientTable.rowByName(patientRowMatch(patient))).toHaveCount(1);
+
+    await staffPage.patientSearch.clear();
+    await expect(staffPage.patientTable.rows.first()).toBeVisible();
+    expect(await staffPage.patientTable.rows.count()).toBeGreaterThan(1);
+  });
+
+  // Verifies an invalid date of birth format shows a validation error.
+  test('rejects invalid date of birth in search', async ({ page }) => {
+    const staffPage = new StaffDashboardPage(page);
+
+    await staffPage.patientSearch.search({ dateOfBirth: '99/99/9999' });
+
+    await expect(staffPage.alert).toBeVisible();
+    await expect(staffPage.alert).toContainText(/dd\/mm\/yyyy/i);
+  });
+
+  // Verifies pagination controls advance through the patient list.
+  test('paginates the patient list', async ({ page }) => {
+    const staffPage = new StaffDashboardPage(page);
+
+    await expect(staffPage.patientPagination.pageInfo).toContainText(/Page 1 of/i);
+
+    await staffPage.patientPagination.goToNextPage();
+    await expect(staffPage.patientPagination.pageInfo).toContainText(/Page 2 of/i);
+
+    await staffPage.patientPagination.goToPreviousPage();
+    await expect(staffPage.patientPagination.pageInfo).toContainText(/Page 1 of/i);
+  });
+
+  // Verifies closing the add-patient modal discards unsaved data.
+  test('closes add patient modal without saving', async ({ page }) => {
+    const staffPage = new StaffDashboardPage(page);
+    const patient = buildPatient();
+
+    await staffPage.openAddPatientModal();
+    await staffPage.fillAddPatientForm(patient);
+    await staffPage.closeAddPatientModal();
+
+    await expect(staffPage.addPatientOverlay).toBeHidden();
+    await staffPage.patientSearch.search({ name: patientRowMatch(patient) });
+    await expect(staffPage.patientTable.rowByName(patientRowMatch(patient))).toHaveCount(0);
   });
 });

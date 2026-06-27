@@ -71,9 +71,9 @@
       const date = new Date(iso + 'T00:00:00');
       if (
         isNaN(date.getTime()) ||
-        date.getUTCFullYear() !== year ||
-        date.getUTCMonth() + 1 !== month ||
-        date.getUTCDate() !== day
+        date.getFullYear() !== year ||
+        date.getMonth() + 1 !== month ||
+        date.getDate() !== day
       ) {
         return null;
       }
