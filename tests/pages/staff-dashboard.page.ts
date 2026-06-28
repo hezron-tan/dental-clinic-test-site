@@ -20,8 +20,12 @@ export class StaffDashboardPage {
     this.patientTable = new PatientTableComponent(page);
     this.patientPagination = new PatientPaginationComponent(page);
     this.patientSearch = new PatientSearchComponent(page);
-    this.patientForm = new PatientFormComponent(page);
-    this.historyForm = new HistoryFormComponent(page);
+    this.patientForm = new PatientFormComponent(page, page.getByTestId('view-patient-overlay'));
+    this.historyForm = new HistoryFormComponent(
+      page,
+      page.getByTestId('add-visit-overlay'),
+      page.getByTestId('view-patient-overlay')
+    );
   }
 
   get logoutButton(): Locator {
@@ -36,16 +40,56 @@ export class StaffDashboardPage {
     return this.page.getByTestId('staff-alert');
   }
 
+  get toastContainer(): Locator {
+    return this.page.getByTestId('toast-container');
+  }
+
+  get toast(): Locator {
+    return this.page.getByTestId('toast');
+  }
+
   get addPatientButton(): Locator {
     return this.page.getByTestId('add-patient');
   }
 
-  get patientDetails(): Locator {
-    return this.page.getByTestId('patient-details');
+  get viewPatientOverlay(): Locator {
+    return this.page.getByTestId('view-patient-overlay');
   }
 
-  get detailPhone(): Locator {
-    return this.page.locator('#detail-phone');
+  get patientReadonlyView(): Locator {
+    return this.page.getByTestId('patient-readonly-view');
+  }
+
+  get patientEditView(): Locator {
+    return this.page.getByTestId('patient-edit-view');
+  }
+
+  get editPatientButton(): Locator {
+    return this.page.getByTestId('edit-patient-btn');
+  }
+
+  get viewPhone(): Locator {
+    return this.page.getByTestId('view-phone');
+  }
+
+  get cancelViewPatientButton(): Locator {
+    return this.page.getByTestId('cancel-view-patient-btn');
+  }
+
+  get closeViewPatientButton(): Locator {
+    return this.page.getByTestId('close-view-patient-overlay');
+  }
+
+  get addVisitOverlay(): Locator {
+    return this.page.getByTestId('add-visit-overlay');
+  }
+
+  get cancelAddVisitButton(): Locator {
+    return this.page.getByTestId('cancel-add-visit-btn');
+  }
+
+  get closeAddVisitButton(): Locator {
+    return this.page.getByTestId('close-add-visit-overlay');
   }
 
   get addPatientOverlay(): Locator {
@@ -153,15 +197,71 @@ export class StaffDashboardPage {
     await this.closeAddPatientOverlayButton.click();
   }
 
-  async openPatientDetails(name: string): Promise<void> {
-    await this.patientTable.clickEditForPatient(name);
+  async openViewPatient(name: string): Promise<void> {
+    await this.patientSearch.searchByName(name);
+    await this.patientTable.clickViewForPatient(name);
+    await expect(this.viewPatientOverlay).toBeVisible();
+  }
+
+  async closeViewPatientViaCancel(): Promise<void> {
+    await this.cancelViewPatientButton.click();
+    await expect(this.viewPatientOverlay).toBeHidden();
+  }
+
+  async closeViewPatientViaCloseButton(): Promise<void> {
+    await this.closeViewPatientButton.click();
+    await expect(this.viewPatientOverlay).toBeHidden();
+  }
+
+  async enterEditMode(): Promise<void> {
+    await this.editPatientButton.click();
+    await expect(this.patientEditView).toBeVisible();
+    await expect(this.patientReadonlyView).toBeHidden();
   }
 
   async updatePatient(data: PatientFormData): Promise<void> {
     await this.patientForm.fillAndSubmit(data);
   }
 
-  async addVisitHistory(data: VisitHistoryFormData): Promise<void> {
+  async openAddVisitModal(name: string): Promise<void> {
+    await this.patientSearch.searchByName(name);
+    await this.patientTable.clickAddVisitForPatient(name);
+    await expect(this.addVisitOverlay).toBeVisible();
+  }
+
+  async closeAddVisitViaCancel(): Promise<void> {
+    await this.cancelAddVisitButton.click();
+    await expect(this.addVisitOverlay).toBeHidden();
+  }
+
+  async closeAddVisitViaCloseButton(): Promise<void> {
+    await this.closeAddVisitButton.click();
+    await expect(this.addVisitOverlay).toBeHidden();
+  }
+
+  async addVisitHistory(data: VisitHistoryFormData, patientName?: string): Promise<void> {
+    if (patientName) {
+      await this.openAddVisitModal(patientName);
+    }
     await this.historyForm.fillAndSubmit(data);
+  }
+
+  async expectSuccessToast(message: RegExp): Promise<void> {
+    const toast = this.toast.last();
+    await expect(toast).toBeVisible();
+    await expect(toast).toHaveClass(/toast-success/);
+    await expect(toast).toContainText(message);
+  }
+
+  async expectErrorToast(message: RegExp): Promise<void> {
+    const toast = this.toast.last();
+    await expect(toast).toBeVisible();
+    await expect(toast).toHaveClass(/toast-error/);
+    await expect(toast).toContainText(message);
+  }
+
+  async dismissToast(): Promise<void> {
+    await this.toast.last().locator('.toast-close').click();
+    await expect(this.toast).toHaveCount(0);
   }
 }

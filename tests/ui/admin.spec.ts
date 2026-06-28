@@ -1,18 +1,21 @@
 import { expect, test } from '@playwright/test';
+import { adminAuthState } from '../helpers/auth-state';
 import { hasAdminCredentials } from '../helpers/supabase';
 import { buildClinicUpdate, buildPatient, patientRowMatch, testEmail } from '../helpers/test-data';
-import { AdminDashboardPage, LoginPage, PublicPage } from '../pages';
+import { AdminDashboardPage, PublicPage } from '../pages';
 
 const credentialsMessage =
   'Set ADMIN_PASSWORD in .env to match your Supabase admin user (see .env.example).';
 
 test.describe('Admin dashboard', () => {
+  test.use({ storageState: adminAuthState });
+
   test.beforeEach(async ({ page }) => {
     test.skip(!hasAdminCredentials(), credentialsMessage);
 
-    const loginPage = new LoginPage(page);
     const adminPage = new AdminDashboardPage(page);
-    await adminPage.openViaLogin(loginPage);
+    await adminPage.open();
+    await adminPage.waitForReady();
   });
 
   // Verifies the admin dashboard shows the clinic form and patient management tab.
