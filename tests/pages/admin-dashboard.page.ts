@@ -134,6 +134,11 @@ export class AdminDashboardPage {
     await expect(this.clinicNameInput).not.toBeEmpty({ timeout: 10_000 });
   }
 
+  async waitForReady(): Promise<void> {
+    await expect(this.userGreeting).not.toBeEmpty({ timeout: 15_000 });
+    await this.waitForClinicFormLoaded();
+  }
+
   async fillClinicForm(data: ClinicFormData): Promise<void> {
     if (data.name !== undefined) {
       await this.clinicNameInput.fill(data.name);

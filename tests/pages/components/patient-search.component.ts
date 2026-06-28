@@ -46,6 +46,7 @@ export class PatientSearchComponent {
   }
 
   async searchByDateOfBirth(dob: string, expectedName?: string): Promise<void> {
+    await this.nameInput.fill('');
     await this.search({ dateOfBirth: dob });
     if (expectedName !== undefined) {
       await expect(this.root.getByTestId('patient-row').filter({ hasText: expectedName }).first()).toBeVisible({

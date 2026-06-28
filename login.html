@@ -82,12 +82,21 @@
 		<script src="js/auth.js"></script>
 		<script>
 			document.addEventListener('DOMContentLoaded', async function () {
-				const session = await Auth.getSession();
-				if (session) {
-					const profile = await Auth.getProfile();
-					if (profile) {
-						window.location.href = Auth.dashboardPathForRole(profile.role);
-						return;
+				if (!Auth.isConfigured()) {
+					App.showAlert('login-alert', Auth.configErrorMessage(), 'error');
+				} else {
+					try {
+						const session = await Auth.getSession();
+						if (session) {
+							const profile = await Auth.getProfile();
+							if (profile) {
+								window.location.href = Auth.dashboardPathForRole(profile.role);
+								return;
+							}
+						}
+					} catch (err) {
+						console.error(err);
+						App.showAlert('login-alert', err.message || 'Unable to check your session.', 'error');
 					}
 				}
 

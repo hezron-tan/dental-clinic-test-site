@@ -7,6 +7,7 @@
   let filteredPatients = [];
   let currentPage = 1;
   let currentPatientId = null;
+  let isEditingPatient = false;
 
   function getSearchFilters() {
     const dobRaw = document.getElementById('search-dob').value.trim();
@@ -77,7 +78,10 @@
           '<td>' + App.escapeHtml(App.formatDateDMY(p.date_of_birth)) + '</td>' +
           '<td>' + App.escapeHtml(p.phone || '—') + '</td>' +
           '<td>' + App.escapeHtml(p.email || '—') + '</td>' +
-          '<td><button type="button" class="button edit-patient" data-id="' + p.id + '" data-testid="edit-patient">Edit</button></td>' +
+          '<td><div class="table-actions">' +
+          '<button type="button" class="button view-patient" data-id="' + p.id + '" data-testid="view-patient">View</button>' +
+          '<button type="button" class="button add-visit-patient" data-id="' + p.id + '" data-testid="add-visit-patient">Add Visit</button>' +
+          '</div></td>' +
           '</tr>';
       }).join('');
     }
@@ -110,46 +114,121 @@
     renderPatientTable();
   }
 
+  function setModalOpen(isOpen) {
+    if (isOpen) {
+      document.body.classList.add('modal-open');
+    } else {
+      document.body.classList.remove('modal-open');
+    }
+  }
+
+  function isAnyOverlayOpen() {
+    return !document.getElementById('add-patient-overlay').hidden ||
+      !document.getElementById('view-patient-overlay').hidden ||
+      !document.getElementById('add-visit-overlay').hidden;
+  }
+
   function hideAddPatientModal() {
     const overlay = document.getElementById('add-patient-overlay');
     overlay.hidden = true;
     overlay.setAttribute('aria-hidden', 'true');
-    document.body.classList.remove('modal-open');
+    if (!isAnyOverlayOpen()) {
+      setModalOpen(false);
+    }
   }
 
   function showAddPatientForm() {
-    document.getElementById('patient-details').hidden = true;
+    hideViewPatientOverlay();
+    hideAddVisitOverlay();
     currentPatientId = null;
 
     const overlay = document.getElementById('add-patient-overlay');
     document.getElementById('add-patient-form').reset();
     overlay.hidden = false;
     overlay.setAttribute('aria-hidden', 'false');
-    document.body.classList.add('modal-open');
+    setModalOpen(true);
 
     const firstField = document.getElementById('add-patient-first-name');
     if (firstField) firstField.focus();
   }
 
-  function hidePatientPanels() {
-    hideAddPatientModal();
-    document.getElementById('patient-details').hidden = true;
-    currentPatientId = null;
+  function setPatientEditMode(editing) {
+    isEditingPatient = editing;
+    document.getElementById('patient-readonly-view').hidden = editing;
+    document.getElementById('patient-edit-view').hidden = !editing;
+    document.getElementById('edit-patient-btn').hidden = editing;
   }
 
-  function renderPatientDetails(patient) {
-    hideAddPatientModal();
-    document.getElementById('patient-details').hidden = false;
-    document.getElementById('detail-name').textContent = patient.first_name + ' ' + patient.last_name;
-    document.getElementById('detail-dob').textContent = App.formatDateDMY(patient.date_of_birth);
-    document.getElementById('detail-phone').textContent = patient.phone || '—';
-    document.getElementById('detail-email').textContent = patient.email || '—';
-    document.getElementById('detail-address').textContent = patient.address || '—';
-    document.getElementById('detail-emergency').textContent =
-      (patient.emergency_contact_name || '—') +
-      (patient.emergency_contact_phone ? ' (' + patient.emergency_contact_phone + ')' : '');
-    document.getElementById('detail-notes').textContent = patient.notes || '—';
+  function renderPatientReadonly(patient) {
+    document.getElementById('view-patient-title').textContent =
+      patient.first_name + ' ' + patient.last_name;
+    document.getElementById('view-first-name').textContent = patient.first_name || '—';
+    document.getElementById('view-last-name').textContent = patient.last_name || '—';
+    document.getElementById('view-dob').textContent = App.formatDateDMY(patient.date_of_birth);
+    document.getElementById('view-phone').textContent = patient.phone || '—';
+    document.getElementById('view-email').textContent = patient.email || '—';
+    document.getElementById('view-address').textContent = patient.address || '—';
+    document.getElementById('view-emergency-name').textContent =
+      patient.emergency_contact_name || '—';
+    document.getElementById('view-emergency-phone').textContent =
+      patient.emergency_contact_phone || '—';
+    document.getElementById('view-notes').textContent = patient.notes || '—';
     Patients.fillForm(document.getElementById('patient-form'), patient);
+  }
+
+  function hideViewPatientOverlay() {
+    const overlay = document.getElementById('view-patient-overlay');
+    overlay.hidden = true;
+    overlay.setAttribute('aria-hidden', 'true');
+    setPatientEditMode(false);
+    currentPatientId = null;
+    if (!isAnyOverlayOpen()) {
+      setModalOpen(false);
+    }
+  }
+
+  function showViewPatientOverlay(patient) {
+    hideAddPatientModal();
+    hideAddVisitOverlay();
+    currentPatientId = patient.id;
+    renderPatientReadonly(patient);
+    setPatientEditMode(false);
+
+    const overlay = document.getElementById('view-patient-overlay');
+    overlay.hidden = false;
+    overlay.setAttribute('aria-hidden', 'false');
+    setModalOpen(true);
+  }
+
+  function hideAddVisitOverlay() {
+    const overlay = document.getElementById('add-visit-overlay');
+    overlay.hidden = true;
+    overlay.setAttribute('aria-hidden', 'true');
+    currentPatientId = null;
+    if (!isAnyOverlayOpen()) {
+      setModalOpen(false);
+    }
+  }
+
+  async function showAddVisitOverlay(patient) {
+    hideAddPatientModal();
+    hideViewPatientOverlay();
+    currentPatientId = patient.id;
+
+    document.getElementById('add-visit-title').textContent = 'Add Visit Record';
+    document.getElementById('add-visit-patient-name').textContent =
+      patient.first_name + ' ' + patient.last_name;
+
+    const form = document.getElementById('history-form');
+    form.reset();
+    form.visit_date.value = new Date().toISOString().slice(0, 10);
+
+    const overlay = document.getElementById('add-visit-overlay');
+    overlay.hidden = false;
+    overlay.setAttribute('aria-hidden', 'false');
+    setModalOpen(true);
+
+    form.visit_date.focus();
   }
 
   async function loadHistory(patientId) {
@@ -170,12 +249,24 @@
     }).join('');
   }
 
-  async function selectPatient(id) {
-    currentPatientId = id;
-    const patient = await Patients.get(id);
-    renderPatientDetails(patient);
-    await loadHistory(id);
-    document.getElementById('patient-details').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  async function openViewPatient(id) {
+    try {
+      currentPatientId = id;
+      const patient = await Patients.get(id);
+      showViewPatientOverlay(patient);
+      await loadHistory(id);
+    } catch (err) {
+      App.handleError('staff-alert', err);
+    }
+  }
+
+  async function openAddVisit(id) {
+    try {
+      const patient = await Patients.get(id);
+      await showAddVisitOverlay(patient);
+    } catch (err) {
+      App.handleError('staff-alert', err);
+    }
   }
 
   async function saveNewPatient(e) {
@@ -187,8 +278,8 @@
       e.target.reset();
       hideAddPatientModal();
       await loadPatients();
-      await selectPatient(patient.id);
-      App.showAlert('staff-alert', 'Patient added.', 'success');
+      await openViewPatient(patient.id);
+      App.showToast('Patient added.', 'success');
     } catch (err) {
       App.handleError('staff-alert', err);
     }
@@ -197,23 +288,21 @@
   async function savePatient(e) {
     e.preventDefault();
     if (!currentPatientId) return;
-    App.hideAlert('staff-alert');
 
     try {
       await Patients.update(currentPatientId, Patients.formToPatient(e.target));
-      const patient = await Patients.get(currentPatientId);
-      renderPatientDetails(patient);
+      hideViewPatientOverlay();
       await loadPatients(true);
-      App.showAlert('staff-alert', 'Patient details updated.', 'success');
+      App.showToast('Patient has been updated.', 'success');
     } catch (err) {
-      App.handleError('staff-alert', err);
+      console.error(err);
+      App.showToast('Patient data can\'t be updated.', 'error');
     }
   }
 
   async function addHistory(e) {
     e.preventDefault();
     if (!currentPatientId) return;
-    App.hideAlert('staff-alert');
     const form = e.target;
     const session = await Auth.getSession();
 
@@ -227,12 +316,12 @@
         notes: form.history_notes.value.trim() || null,
         created_by: session.user.id
       });
-      form.reset();
-      form.visit_date.value = new Date().toISOString().slice(0, 10);
-      await loadHistory(currentPatientId);
-      App.showAlert('staff-alert', 'Visit history added.', 'success');
+      hideAddVisitOverlay();
+      currentPatientId = null;
+      App.showToast('Patient has been updated.', 'success');
     } catch (err) {
-      App.handleError('staff-alert', err);
+      console.error(err);
+      App.showToast('Patient\'s visit can\'t be updated.', 'error');
     }
   }
 
@@ -257,6 +346,16 @@
     renderPatientTable();
   }
 
+  function handleOverlayEscape() {
+    if (!document.getElementById('add-patient-overlay').hidden) {
+      hideAddPatientModal();
+    } else if (!document.getElementById('view-patient-overlay').hidden) {
+      hideViewPatientOverlay();
+    } else if (!document.getElementById('add-visit-overlay').hidden) {
+      hideAddVisitOverlay();
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', async function () {
     const profile = await Auth.requireRole(['admin', 'staff']);
     if (!profile) return;
@@ -279,12 +378,30 @@
     document.getElementById('add-patient-overlay').addEventListener('click', function (e) {
       if (e.target === e.currentTarget) hideAddPatientModal();
     });
+
+    document.getElementById('close-view-patient-overlay').addEventListener('click', hideViewPatientOverlay);
+    document.getElementById('cancel-view-patient-btn').addEventListener('click', hideViewPatientOverlay);
+    document.getElementById('view-patient-overlay').addEventListener('click', function (e) {
+      if (e.target === e.currentTarget) hideViewPatientOverlay();
+    });
+    document.getElementById('edit-patient-btn').addEventListener('click', function () {
+      setPatientEditMode(true);
+      const firstField = document.querySelector('#patient-form [name="first_name"]');
+      if (firstField) firstField.focus();
+    });
+
+    document.getElementById('close-add-visit-overlay').addEventListener('click', hideAddVisitOverlay);
+    document.getElementById('cancel-add-visit-btn').addEventListener('click', hideAddVisitOverlay);
+    document.getElementById('add-visit-overlay').addEventListener('click', function (e) {
+      if (e.target === e.currentTarget) hideAddVisitOverlay();
+    });
+
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && !document.getElementById('add-patient-overlay').hidden) {
-        hideAddPatientModal();
+      if (e.key === 'Escape' && isAnyOverlayOpen()) {
+        handleOverlayEscape();
       }
     });
-    document.getElementById('close-patient-details-btn').addEventListener('click', hidePatientPanels);
+
     document.getElementById('patient-search-form').addEventListener('submit', handleSearch);
     document.getElementById('clear-search-btn').addEventListener('click', clearSearch);
 
@@ -293,8 +410,15 @@
     document.getElementById('history-form').addEventListener('submit', addHistory);
 
     document.querySelector('#patient-table').addEventListener('click', function (e) {
-      const editBtn = e.target.closest('.edit-patient');
-      if (editBtn) selectPatient(editBtn.dataset.id);
+      const viewBtn = e.target.closest('.view-patient');
+      if (viewBtn) {
+        openViewPatient(viewBtn.dataset.id);
+        return;
+      }
+      const addVisitBtn = e.target.closest('.add-visit-patient');
+      if (addVisitBtn) {
+        openAddVisit(addVisitBtn.dataset.id);
+      }
     });
 
     document.getElementById('prev-page').addEventListener('click', function () {
@@ -311,9 +435,6 @@
         renderPatientTable();
       }
     });
-
-    document.getElementById('history-form').visit_date.value =
-      new Date().toISOString().slice(0, 10);
 
     try {
       await loadPatients();

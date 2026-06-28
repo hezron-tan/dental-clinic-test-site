@@ -1,4 +1,3 @@
-import { faker } from '@faker-js/faker';
 import type { ClinicFormData, PatientFormData, VisitHistoryFormData } from '../models';
 
 const DENTAL_PROCEDURES = [
@@ -12,18 +11,43 @@ const DENTAL_PROCEDURES = [
   'Other'
 ] as const;
 
+const FIRST_NAMES = ['Alex', 'Jordan', 'Taylor', 'Casey', 'Riley', 'Morgan', 'Quinn', 'Avery'];
+const LAST_NAMES = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis'];
+const STREETS = ['Oak St', 'Pine Ave', 'Maple Dr', 'Cedar Ln', 'Elm Blvd'];
+const CATCHPHRASES = [
+  'Your smile, our priority',
+  'Gentle care for every patient',
+  'Healthy teeth, happy life'
+];
+
+let seed = Date.now();
+
 /** Set a fixed seed when you need reproducible values (e.g. debugging a flaky test). */
-export function seedFaker(seed: number): void {
-  faker.seed(seed);
+export function seedFaker(nextSeed: number): void {
+  seed = nextSeed;
+}
+
+function nextRandom(): number {
+  seed = (seed * 1664525 + 1013904223) % 4294967296;
+  return seed / 4294967296;
+}
+
+function pick<T>(items: readonly T[]): T {
+  return items[Math.floor(nextRandom() * items.length)];
 }
 
 function uniqueSuffix(): string {
-  return faker.string.alphanumeric(6).toLowerCase();
+  return Math.floor(nextRandom() * 1_000_000)
+    .toString(36)
+    .padStart(6, '0');
 }
 
 /** Matches the Portland clinic phone format used in seed data. */
 export function portlandPhone(): string {
-  return `(503) 555-${faker.string.numeric(4)}`;
+  const digits = Math.floor(nextRandom() * 10_000)
+    .toString()
+    .padStart(4, '0');
+  return `(503) 555-${digits}`;
 }
 
 /** Safe test-only email domain (RFC 2606). */
@@ -54,34 +78,56 @@ export function toSearchDateOfBirth(isoDate: string): string {
   return `${day}/${month}/${year}`;
 }
 
+function randomBirthDate(): string {
+  const year = 1940 + Math.floor(nextRandom() * 60);
+  const month = 1 + Math.floor(nextRandom() * 12);
+  const day = 1 + Math.floor(nextRandom() * 28);
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+/** ISO birth date unlikely to exist in seed data or collide across parallel tests. */
+export function uniqueBirthDate(): string {
+  const n = Date.now() + Math.floor(nextRandom() * 1_000_000);
+  const day = 1 + (n % 28);
+  const month = 1 + (Math.floor(n / 28) % 12);
+  const year = 2090 + (Math.floor(n / (28 * 12)) % 9);
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+function recentVisitDate(): string {
+  const date = new Date();
+  date.setDate(date.getDate() - Math.floor(nextRandom() * 30));
+  return date.toISOString().slice(0, 10);
+}
+
 export function buildPatient(overrides: Partial<PatientFormData> = {}): PatientFormData {
   const suffix = uniqueSuffix();
 
   return {
-    firstName: faker.person.firstName(),
-    lastName: `${faker.person.lastName()}${suffix}`,
-    dateOfBirth: faker.date.birthdate({ min: 18, max: 90, mode: 'age' }).toISOString().slice(0, 10),
+    firstName: pick(FIRST_NAMES),
+    lastName: `${pick(LAST_NAMES)}${suffix}`,
+    dateOfBirth: randomBirthDate(),
     email: testEmail('patient'),
     phone: portlandPhone(),
-    address: `${faker.location.streetAddress()}, Portland, OR`,
+    address: `${Math.floor(nextRandom() * 9000) + 100} ${pick(STREETS)}, Portland, OR`,
     ...overrides
   };
 }
 
 export function buildVisitHistory(overrides: Partial<VisitHistoryFormData> = {}): VisitHistoryFormData {
   return {
-    visitDate: faker.date.recent({ days: 30 }).toISOString().slice(0, 10),
-    procedure: faker.helpers.arrayElement(DENTAL_PROCEDURES),
-    description: faker.lorem.sentence(),
-    dentist: `Dr. ${faker.person.lastName()}`,
+    visitDate: recentVisitDate(),
+    procedure: pick(DENTAL_PROCEDURES),
+    description: 'Routine follow-up visit.',
+    dentist: `Dr. ${pick(LAST_NAMES)}`,
     ...overrides
   };
 }
 
 export function buildClinicUpdate(overrides: Partial<ClinicFormData> = {}): ClinicFormData {
   return {
-    tagline: faker.company.catchPhrase(),
-    address: `${faker.location.streetAddress()}, Portland, OR`,
+    tagline: pick(CATCHPHRASES),
+    address: `${Math.floor(nextRandom() * 9000) + 100} ${pick(STREETS)}, Portland, OR`,
     phone: portlandPhone(),
     email: testEmail('clinic'),
     hours: 'Mon–Fri 8:00–17:00',

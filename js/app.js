@@ -42,6 +42,58 @@
       if (el) el.hidden = true;
     },
 
+    showToast(message, type, options) {
+      const opts = options || {};
+      const duration = opts.duration !== undefined ? opts.duration : 30000;
+
+      let container = document.getElementById('toast-container');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'toast-container';
+        container.setAttribute('data-testid', 'toast-container');
+        document.body.appendChild(container);
+      }
+
+      const toast = document.createElement('div');
+      toast.className = 'toast toast-' + (type || 'info');
+      toast.setAttribute('role', 'alert');
+      toast.setAttribute('data-testid', 'toast');
+
+      const messageEl = document.createElement('span');
+      messageEl.className = 'toast-message';
+      messageEl.textContent = message;
+
+      const closeBtn = document.createElement('button');
+      closeBtn.type = 'button';
+      closeBtn.className = 'toast-close';
+      closeBtn.setAttribute('aria-label', 'Close');
+      closeBtn.innerHTML = '&times;';
+      closeBtn.addEventListener('click', function () {
+        App.hideToast(toast);
+      });
+
+      toast.appendChild(messageEl);
+      toast.appendChild(closeBtn);
+      container.appendChild(toast);
+
+      if (duration > 0) {
+        setTimeout(function () {
+          App.hideToast(toast);
+        }, duration);
+      }
+
+      return toast;
+    },
+
+    hideToast(toast) {
+      if (!toast || !toast.parentNode) return;
+      toast.classList.add('toast-hiding');
+      setTimeout(function () {
+        toast.remove();
+      }, 300);
+    },
+
     formatDate(dateStr) {
       if (!dateStr) return '—';
       return new Date(dateStr + 'T00:00:00').toLocaleDateString();
