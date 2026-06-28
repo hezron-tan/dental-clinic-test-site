@@ -15,6 +15,14 @@ export class PatientTableComponent {
     return this.rows.filter({ hasText: name });
   }
 
+  async clickViewForPatient(name: string): Promise<void> {
+    await this.rowByName(name).first().getByTestId('view-patient').click();
+  }
+
+  async clickAddVisitForPatient(name: string): Promise<void> {
+    await this.rowByName(name).first().getByTestId('add-visit-patient').click();
+  }
+
   async clickEditForPatient(name: string): Promise<void> {
     await this.rowByName(name).first().getByTestId('edit-patient').click();
   }

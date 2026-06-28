@@ -5,7 +5,8 @@ import {
   StaffDashboardPage
 } from '../pages';
 import { hasAdminCredentials, hasStaffCredentials } from '../helpers/supabase';
-import { buildPatient, patientRowMatch } from '../helpers/test-data';
+import { adminAuthState, staffAuthState } from '../helpers/auth-state';
+import { buildPatient, buildVisitHistory, patientRowMatch, portlandPhone } from '../helpers/test-data';
 
 const adminCredentialsMessage =
   'Set ADMIN_PASSWORD in .env to match your Supabase admin user (see .env.example).';
@@ -62,28 +63,31 @@ test.describe('Route protection — negative scenarios', () => {
     await expect(page).toHaveURL(/login\.html/);
   });
 
-  test('prevents staff users from staying on the admin dashboard', async ({ page }) => {
-    test.skip(!hasStaffCredentials(), staffCredentialsMessage);
+  test.describe('authenticated staff', () => {
+    test.use({ storageState: staffAuthState });
 
-    const loginPage = new LoginPage(page);
-    const staffPage = new StaffDashboardPage(page);
+    test('prevents staff users from staying on the admin dashboard', async ({ page }) => {
+      test.skip(!hasStaffCredentials(), staffCredentialsMessage);
 
-    await staffPage.openViaLogin(loginPage);
-    await page.goto('/admin/');
-    await page.waitForTimeout(2000);
+      await page.goto('/staff/');
+      await page.goto('/admin/');
+      await page.waitForTimeout(2000);
 
-    await expect(page).not.toHaveURL(/admin\/?$/);
-    await expect(page).toHaveURL(/staff\/?/);
+      await expect(page).not.toHaveURL(/admin\/?$/);
+      await expect(page).toHaveURL(/staff\/?/);
+    });
   });
 });
 
 test.describe('Admin dashboard — negative scenarios', () => {
+  test.use({ storageState: adminAuthState });
+
   test.beforeEach(async ({ page }) => {
     test.skip(!hasAdminCredentials(), adminCredentialsMessage);
 
-    const loginPage = new LoginPage(page);
     const adminPage = new AdminDashboardPage(page);
-    await adminPage.openViaLogin(loginPage);
+    await adminPage.open();
+    await adminPage.waitForReady();
   });
 
   test('blocks saving clinic info when clinic name is cleared', async ({ page }) => {
@@ -156,12 +160,14 @@ test.describe('Admin dashboard — negative scenarios', () => {
 });
 
 test.describe('Staff dashboard — negative scenarios', () => {
+  test.use({ storageState: staffAuthState });
+
   test.beforeEach(async ({ page }) => {
     test.skip(!hasStaffCredentials(), staffCredentialsMessage);
 
-    const loginPage = new LoginPage(page);
     const staffPage = new StaffDashboardPage(page);
-    await staffPage.openViaLogin(loginPage);
+    await staffPage.open();
+    await staffPage.waitForReady();
   });
 
   test('shows a validation error for impossible date of birth values', async ({ page }) => {
@@ -227,5 +233,78 @@ test.describe('Staff dashboard — negative scenarios', () => {
 
     await expect(staffPage.patientTable.table).toContainText(/no patients found/i);
     await expect(staffPage.alert).toBeHidden();
+  });
+
+  test('keeps view overlay open and shows error toast when patient save fails', async ({
+    page
+  }) => {
+    const staffPage = new StaffDashboardPage(page);
+    const patient = buildPatient();
+
+    await staffPage.addPatient(patient);
+    await staffPage.enterEditMode();
+
+    await page.route('**/rest/v1/patients*', (route) => {
+      if (route.request().method() === 'PATCH') {
+        route.fulfill({
+          status: 500,
+          contentType: 'application/json',
+          body: JSON.stringify({ message: 'save failed', code: '500' })
+        });
+        return;
+      }
+      route.continue();
+    });
+
+    await staffPage.patientForm.phoneInput.fill(portlandPhone());
+    await staffPage.patientForm.submit();
+
+    await staffPage.expectErrorToast(/can't be updated/i);
+    await expect(staffPage.viewPatientOverlay).toBeVisible();
+  });
+
+  test('keeps add visit overlay open and shows error toast when visit save fails', async ({
+    page
+  }) => {
+    const staffPage = new StaffDashboardPage(page);
+    const patient = buildPatient();
+    const visit = buildVisitHistory();
+
+    await staffPage.addPatient(patient);
+    await staffPage.closeViewPatientViaCloseButton();
+    await staffPage.openAddVisitModal(patientRowMatch(patient));
+
+    await page.route('**/rest/v1/patient_history*', (route) => {
+      if (route.request().method() === 'POST') {
+        route.fulfill({
+          status: 500,
+          contentType: 'application/json',
+          body: JSON.stringify({ message: 'save failed', code: '500' })
+        });
+        return;
+      }
+      route.continue();
+    });
+
+    await staffPage.historyForm.fillAndSubmit(visit);
+
+    await staffPage.expectErrorToast(/visit can't be updated/i);
+    await expect(staffPage.addVisitOverlay).toBeVisible();
+  });
+
+  test('blocks saving patient details when required name fields are cleared in edit mode', async ({
+    page
+  }) => {
+    const staffPage = new StaffDashboardPage(page);
+
+    await staffPage.addPatient(buildPatient());
+    await staffPage.dismissToast();
+    await staffPage.enterEditMode();
+    await staffPage.patientForm.firstNameInput.fill('');
+    await staffPage.patientForm.submit();
+
+    await expect(staffPage.patientForm.firstNameInput).toHaveJSProperty('validity.valid', false);
+    await expect(staffPage.viewPatientOverlay).toBeVisible();
+    await expect(staffPage.toast).toHaveCount(0);
   });
 });

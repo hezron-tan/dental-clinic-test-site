@@ -1,39 +1,43 @@
-import type { Locator, Page } from '@playwright/test';
+import { type Locator, type Page } from '@playwright/test';
 import type { PatientFormData } from '../../models';
 
 export class PatientFormComponent {
-  constructor(private readonly page: Page) {}
+  private readonly root: Page | Locator;
+
+  constructor(page: Page, scope?: Locator) {
+    this.root = scope ?? page;
+  }
 
   get form(): Locator {
-    return this.page.getByTestId('patient-form');
+    return this.root.getByTestId('patient-form');
   }
 
   get firstNameInput(): Locator {
-    return this.page.getByTestId('patient-first-name');
+    return this.root.getByTestId('patient-first-name');
   }
 
   get lastNameInput(): Locator {
-    return this.page.getByTestId('patient-last-name');
+    return this.root.getByTestId('patient-last-name');
   }
 
   get dateOfBirthInput(): Locator {
-    return this.page.getByTestId('patient-dob');
+    return this.root.getByTestId('patient-dob');
   }
 
   get emailInput(): Locator {
-    return this.page.getByTestId('patient-email');
+    return this.root.getByTestId('patient-email');
   }
 
   get phoneInput(): Locator {
-    return this.page.getByTestId('patient-phone');
+    return this.root.getByTestId('patient-phone');
   }
 
   get addressInput(): Locator {
-    return this.page.getByTestId('patient-address');
+    return this.root.getByTestId('patient-address');
   }
 
   get saveButton(): Locator {
-    return this.page.getByTestId('save-patient');
+    return this.root.getByTestId('save-patient');
   }
 
   async fill(data: PatientFormData): Promise<void> {

@@ -83,78 +83,122 @@
 									<button type="button" class="button" id="next-page" data-testid="next-page" disabled>Next</button>
 								</div>
 							</div>
-
-							<div id="patient-details" class="panel" hidden data-testid="patient-details">
-								<h3 id="detail-name"></h3>
-								<dl class="contact">
-									<dt>Date of Birth</dt><dd id="detail-dob"></dd>
-									<dt>Phone</dt><dd id="detail-phone"></dd>
-									<dt>Email</dt><dd id="detail-email"></dd>
-									<dt>Address</dt><dd id="detail-address"></dd>
-									<dt>Emergency Contact</dt><dd id="detail-emergency"></dd>
-									<dt>Notes</dt><dd id="detail-notes"></dd>
-								</dl>
-
-								<h3>Edit Personal Details</h3>
-								<form id="patient-form" class="form-grid" data-testid="patient-form">
-									<label>First Name</label>
-									<input type="text" name="first_name" required data-testid="patient-first-name" />
-									<label>Last Name</label>
-									<input type="text" name="last_name" required data-testid="patient-last-name" />
-									<label>Date of Birth</label>
-									<input type="date" name="date_of_birth" data-testid="patient-dob" />
-									<label>Email</label>
-									<input type="email" name="email" data-testid="patient-email" />
-									<label>Phone</label>
-									<input type="text" name="phone" data-testid="patient-phone" />
-									<label>Address</label>
-									<input type="text" name="address" data-testid="patient-address" />
-									<label>Emergency Contact Name</label>
-									<input type="text" name="emergency_contact_name" />
-									<label>Emergency Contact Phone</label>
-									<input type="text" name="emergency_contact_phone" />
-									<label>Notes</label>
-									<textarea name="notes" rows="3"></textarea>
-									<ul class="actions" style="margin-top:1em">
-										<li><button type="submit" class="button primary" data-testid="save-patient">Save Details</button></li>
-										<li><button type="button" class="button" id="close-patient-details-btn">Close</button></li>
-									</ul>
-								</form>
-
-								<h3>Visit History</h3>
-								<ul id="history-list" class="history-list" data-testid="history-list"></ul>
-
-								<h3>Add Visit Record</h3>
-								<form id="history-form" class="form-grid" data-testid="history-form">
-									<label>Visit Date</label>
-									<input type="date" name="visit_date" required data-testid="history-date" />
-									<label>Procedure Type</label>
-									<select name="procedure_type" required data-testid="history-procedure">
-										<option value="Checkup">Checkup</option>
-										<option value="Cleaning">Cleaning</option>
-										<option value="Filling">Filling</option>
-										<option value="Extraction">Extraction</option>
-										<option value="Root Canal">Root Canal</option>
-										<option value="Crown">Crown</option>
-										<option value="X-Ray">X-Ray</option>
-										<option value="Other">Other</option>
-									</select>
-									<label>Description</label>
-									<input type="text" name="description" data-testid="history-description" />
-									<label>Dentist</label>
-									<input type="text" name="dentist_name" data-testid="history-dentist" />
-									<label>Notes</label>
-									<textarea name="history_notes" rows="2"></textarea>
-									<ul class="actions" style="margin-top:1em">
-										<li><button type="submit" class="button primary" data-testid="add-history">Add Visit</button></li>
-									</ul>
-								</form>
-							</div>
 						</article>
 					</div>
 				</div>
 			</section>
 
+		</div>
+
+		<div id="toast-container" class="toast-container" data-testid="toast-container"></div>
+
+		<div id="view-patient-overlay" class="modal-overlay" hidden aria-hidden="true" data-testid="view-patient-overlay">
+			<div class="modal-dialog modal-dialog-wide" role="dialog" aria-modal="true" aria-labelledby="view-patient-title">
+				<button type="button" class="modal-close" id="close-view-patient-overlay" aria-label="Close" data-testid="close-view-patient-overlay">&times;</button>
+				<div class="modal-header">
+					<div class="modal-header-row">
+						<h3 id="view-patient-title">Patient Details</h3>
+						<button type="button" class="button" id="edit-patient-btn" data-testid="edit-patient-btn">Edit</button>
+					</div>
+				</div>
+				<div class="modal-body">
+					<div id="patient-readonly-view" data-testid="patient-readonly-view">
+						<h4 class="modal-section-title">Personal Details</h4>
+						<div class="form-grid form-grid-readonly">
+							<label>First Name</label>
+							<span id="view-first-name" class="readonly-value" data-testid="view-first-name"></span>
+							<label>Last Name</label>
+							<span id="view-last-name" class="readonly-value" data-testid="view-last-name"></span>
+							<label>Date of Birth</label>
+							<span id="view-dob" class="readonly-value" data-testid="view-dob"></span>
+							<label>Email</label>
+							<span id="view-email" class="readonly-value" data-testid="view-email"></span>
+							<label>Phone</label>
+							<span id="view-phone" class="readonly-value" data-testid="view-phone"></span>
+							<label>Address</label>
+							<span id="view-address" class="readonly-value" data-testid="view-address"></span>
+							<label>Emergency Contact Name</label>
+							<span id="view-emergency-name" class="readonly-value"></span>
+							<label>Emergency Contact Phone</label>
+							<span id="view-emergency-phone" class="readonly-value"></span>
+							<label>Notes</label>
+							<span id="view-notes" class="readonly-value"></span>
+						</div>
+					</div>
+
+					<div id="patient-edit-view" hidden data-testid="patient-edit-view">
+						<h4 class="modal-section-title">Edit Personal Details</h4>
+						<form id="patient-form" class="form-grid" data-testid="patient-form">
+							<label>First Name</label>
+							<input type="text" name="first_name" required data-testid="patient-first-name" />
+							<label>Last Name</label>
+							<input type="text" name="last_name" required data-testid="patient-last-name" />
+							<label>Date of Birth</label>
+							<input type="date" name="date_of_birth" data-testid="patient-dob" />
+							<label>Email</label>
+							<input type="email" name="email" data-testid="patient-email" />
+							<label>Phone</label>
+							<input type="text" name="phone" data-testid="patient-phone" />
+							<label>Address</label>
+							<input type="text" name="address" data-testid="patient-address" />
+							<label>Emergency Contact Name</label>
+							<input type="text" name="emergency_contact_name" />
+							<label>Emergency Contact Phone</label>
+							<input type="text" name="emergency_contact_phone" />
+							<label>Notes</label>
+							<textarea name="notes" rows="3"></textarea>
+							<ul class="actions special modal-actions">
+								<li><button type="submit" class="button primary" data-testid="save-patient">Save Details</button></li>
+							</ul>
+						</form>
+					</div>
+
+					<h4 class="modal-section-title">Visit History</h4>
+					<ul id="history-list" class="history-list" data-testid="history-list"></ul>
+				</div>
+				<div class="modal-body" style="padding-top:0;padding-bottom:1.5em">
+					<ul class="actions special modal-actions">
+						<li><button type="button" class="button" id="cancel-view-patient-btn" data-testid="cancel-view-patient-btn">Cancel</button></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+
+		<div id="add-visit-overlay" class="modal-overlay" hidden aria-hidden="true" data-testid="add-visit-overlay">
+			<div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="add-visit-title">
+				<button type="button" class="modal-close" id="close-add-visit-overlay" aria-label="Close" data-testid="close-add-visit-overlay">&times;</button>
+				<div class="modal-header">
+					<h3 id="add-visit-title">Add Visit Record</h3>
+					<p id="add-visit-patient-name" class="modal-subtitle"></p>
+				</div>
+				<div class="modal-body">
+					<form id="history-form" class="form-grid" data-testid="history-form">
+						<label>Visit Date</label>
+						<input type="date" name="visit_date" required data-testid="history-date" />
+						<label>Procedure Type</label>
+						<select name="procedure_type" required data-testid="history-procedure">
+							<option value="Checkup">Checkup</option>
+							<option value="Cleaning">Cleaning</option>
+							<option value="Filling">Filling</option>
+							<option value="Extraction">Extraction</option>
+							<option value="Root Canal">Root Canal</option>
+							<option value="Crown">Crown</option>
+							<option value="X-Ray">X-Ray</option>
+							<option value="Other">Other</option>
+						</select>
+						<label>Description</label>
+						<input type="text" name="description" data-testid="history-description" />
+						<label>Dentist</label>
+						<input type="text" name="dentist_name" data-testid="history-dentist" />
+						<label>Notes</label>
+						<textarea name="history_notes" rows="2"></textarea>
+						<ul class="actions special modal-actions">
+							<li><button type="submit" class="button primary" data-testid="add-history">Add Visit</button></li>
+							<li><button type="button" class="button" id="cancel-add-visit-btn" data-testid="cancel-add-visit-btn">Cancel</button></li>
+						</ul>
+					</form>
+				</div>
+			</div>
 		</div>
 
 		<div id="add-patient-overlay" class="modal-overlay" hidden aria-hidden="true" data-testid="add-patient-overlay">

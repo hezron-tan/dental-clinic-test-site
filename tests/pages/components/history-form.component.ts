@@ -2,38 +2,44 @@ import type { Locator, Page } from '@playwright/test';
 import type { VisitHistoryFormData } from '../../models';
 
 export class HistoryFormComponent {
-  constructor(private readonly page: Page) {}
+  private readonly formRoot: Page | Locator;
+  private readonly listRoot: Page | Locator;
+
+  constructor(page: Page, formScope?: Locator, listScope?: Locator) {
+    this.formRoot = formScope ?? page;
+    this.listRoot = listScope ?? page;
+  }
 
   get form(): Locator {
-    return this.page.getByTestId('history-form');
+    return this.formRoot.getByTestId('history-form');
   }
 
   get visitDateInput(): Locator {
-    return this.page.getByTestId('history-date');
+    return this.formRoot.getByTestId('history-date');
   }
 
   get procedureSelect(): Locator {
-    return this.page.getByTestId('history-procedure');
+    return this.formRoot.getByTestId('history-procedure');
   }
 
   get descriptionInput(): Locator {
-    return this.page.getByTestId('history-description');
+    return this.formRoot.getByTestId('history-description');
   }
 
   get dentistInput(): Locator {
-    return this.page.getByTestId('history-dentist');
+    return this.formRoot.getByTestId('history-dentist');
   }
 
   get addButton(): Locator {
-    return this.page.getByTestId('add-history');
+    return this.formRoot.getByTestId('add-history');
   }
 
   get historyList(): Locator {
-    return this.page.getByTestId('history-list');
+    return this.listRoot.getByTestId('history-list');
   }
 
   get historyEntries(): Locator {
-    return this.page.getByTestId('history-entry');
+    return this.listRoot.getByTestId('history-entry');
   }
 
   async fill(data: VisitHistoryFormData): Promise<void> {

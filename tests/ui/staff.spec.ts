@@ -1,7 +1,15 @@
 import { expect, test } from '@playwright/test';
+import { staffAuthState } from '../helpers/auth-state';
 import { hasStaffCredentials } from '../helpers/supabase';
-import { buildPatient, buildVisitHistory, patientRowMatch, portlandPhone, toSearchDateOfBirth } from '../helpers/test-data';
-import { LoginPage, StaffDashboardPage } from '../pages';
+import {
+  buildPatient,
+  buildVisitHistory,
+  patientRowMatch,
+  portlandPhone,
+  toSearchDateOfBirth,
+  uniqueBirthDate
+} from '../helpers/test-data';
+import { StaffDashboardPage } from '../pages';
 import type { PatientFormData } from '../models';
 
 const credentialsMessage =
@@ -9,63 +17,178 @@ const credentialsMessage =
 
 async function addTestPatient(
   staffPage: StaffDashboardPage,
-  overrides: Partial<PatientFormData> = {}
+  overrides: Partial<PatientFormData> = {},
+  options: { leaveViewOpen?: boolean } = {}
 ): Promise<PatientFormData> {
   const patient = buildPatient(overrides);
   await staffPage.addPatient(patient);
-  await expect(staffPage.alert).toContainText(/added/i);
+  await staffPage.expectSuccessToast(/added/i);
+  if (!options.leaveViewOpen) {
+    await staffPage.closeViewPatientViaCloseButton();
+  }
   return patient;
 }
 
 test.describe('Staff dashboard', () => {
+  test.use({ storageState: staffAuthState });
+
   test.beforeEach(async ({ page }) => {
     test.skip(!hasStaffCredentials(), credentialsMessage);
 
-    const loginPage = new LoginPage(page);
     const staffPage = new StaffDashboardPage(page);
-    await staffPage.openViaLogin(loginPage);
+    await staffPage.open();
+    await staffPage.waitForReady();
   });
 
   // Verifies the patient list loads and staff can view details without delete access.
   test('lists patients in a table and shows details', async ({ page }) => {
     const staffPage = new StaffDashboardPage(page);
-    const patient = await addTestPatient(staffPage);
+    const patient = await addTestPatient(staffPage, {}, { leaveViewOpen: true });
 
     await expect(staffPage.patientTable.table).toBeVisible();
     await expect(staffPage.patientPagination.bar).toBeVisible();
-    await expect(staffPage.patientDetails).toContainText(patient.firstName);
-    await expect(staffPage.patientDetails).toContainText(patient.lastName);
-
-    await expect(staffPage.patientDetails).toBeVisible();
+    await expect(staffPage.viewPatientOverlay).toBeVisible();
+    await expect(staffPage.patientReadonlyView).toBeVisible();
+    await expect(staffPage.patientEditView).toBeHidden();
+    await expect(staffPage.patientReadonlyView).toContainText(patient.firstName);
+    await expect(staffPage.patientReadonlyView).toContainText(patient.lastName);
     await expect(staffPage.historyForm.historyList).toBeVisible();
-    await expect(staffPage.historyForm.form).toBeVisible();
     await expect(page.getByTestId('delete-patient')).toHaveCount(0);
   });
 
-  // Verifies staff can update a patient's phone number from the details panel.
+  // Verifies each patient row exposes View and Add Visit actions.
+  test('shows View and Add Visit actions for each patient row', async ({ page }) => {
+    const staffPage = new StaffDashboardPage(page);
+
+    await expect(staffPage.patientTable.rows.first().getByTestId('view-patient')).toBeVisible();
+    await expect(staffPage.patientTable.rows.first().getByTestId('add-visit-patient')).toBeVisible();
+  });
+
+  // Verifies the View action opens a read-only patient overlay with visit history.
+  test('opens view overlay in read-only mode from View action', async ({ page }) => {
+    const staffPage = new StaffDashboardPage(page);
+    const patient = await addTestPatient(staffPage);
+
+    await staffPage.openViewPatient(patientRowMatch(patient));
+
+    await expect(staffPage.patientReadonlyView).toBeVisible();
+    await expect(staffPage.patientEditView).toBeHidden();
+    await expect(staffPage.editPatientButton).toBeVisible();
+    await expect(staffPage.viewPhone).toHaveText(patient.phone!);
+    await expect(staffPage.historyForm.historyList).toBeVisible();
+  });
+
+  // Verifies the Edit button switches the view overlay into editable mode.
+  test('switches to edit mode from the view overlay', async ({ page }) => {
+    const staffPage = new StaffDashboardPage(page);
+    await addTestPatient(staffPage, {}, { leaveViewOpen: true });
+
+    await staffPage.enterEditMode();
+
+    await expect(staffPage.patientEditView).toBeVisible();
+    await expect(staffPage.patientReadonlyView).toBeHidden();
+    await expect(staffPage.editPatientButton).toHaveAttribute('hidden', '');
+    await expect(staffPage.patientForm.saveButton).toBeVisible();
+  });
+
+  // Verifies staff can close the view overlay with Cancel.
+  test('closes view overlay with Cancel button', async ({ page }) => {
+    const staffPage = new StaffDashboardPage(page);
+    await addTestPatient(staffPage, {}, { leaveViewOpen: true });
+
+    await staffPage.closeViewPatientViaCancel();
+    await expect(staffPage.viewPatientOverlay).toBeHidden();
+  });
+
+  // Verifies staff can close the view overlay with the X button.
+  test('closes view overlay with close button', async ({ page }) => {
+    const staffPage = new StaffDashboardPage(page);
+    await addTestPatient(staffPage, {}, { leaveViewOpen: true });
+
+    await staffPage.closeViewPatientViaCloseButton();
+    await expect(staffPage.viewPatientOverlay).toBeHidden();
+  });
+
+  // Verifies staff can update a patient's phone number from the view overlay.
   test('updates patient phone number', async ({ page }) => {
     const staffPage = new StaffDashboardPage(page);
-    await addTestPatient(staffPage);
+    const patient = await addTestPatient(staffPage, {}, { leaveViewOpen: true });
     const uniquePhone = portlandPhone();
 
-    await expect(staffPage.patientDetails).toBeVisible();
-
+    await staffPage.enterEditMode();
     await staffPage.patientForm.phoneInput.fill(uniquePhone);
     await staffPage.patientForm.submit();
 
-    await expect(staffPage.alert).toContainText(/updated/i);
-    await expect(staffPage.detailPhone).toHaveText(uniquePhone);
+    await staffPage.expectSuccessToast(/updated/i);
+    await expect(staffPage.viewPatientOverlay).toBeHidden();
+
+    await staffPage.openViewPatient(patientRowMatch(patient));
+    await expect(staffPage.viewPhone).toHaveText(uniquePhone);
+  });
+
+  // Verifies a success toast can be dismissed manually.
+  test('allows dismissing success toast notifications', async ({ page }) => {
+    const staffPage = new StaffDashboardPage(page);
+    await addTestPatient(staffPage, {}, { leaveViewOpen: true });
+
+    await staffPage.dismissToast();
+    await expect(staffPage.toast).toHaveCount(0);
+  });
+
+  // Verifies the Add Visit action opens its overlay.
+  test('opens add visit overlay from Add Visit action', async ({ page }) => {
+    const staffPage = new StaffDashboardPage(page);
+    const patient = buildPatient();
+    await staffPage.addPatient(patient);
+    await staffPage.expectSuccessToast(/added/i);
+    await staffPage.closeViewPatientViaCloseButton();
+
+    await staffPage.openAddVisitModal(patientRowMatch(patient));
+
+    await expect(staffPage.addVisitOverlay).toBeVisible();
+    await expect(staffPage.historyForm.form).toBeVisible();
+    await expect(staffPage.addVisitOverlay).toContainText(patient.firstName);
+  });
+
+  // Verifies staff can close the add visit overlay with Cancel.
+  test('closes add visit overlay with Cancel button', async ({ page }) => {
+    const staffPage = new StaffDashboardPage(page);
+    const patient = buildPatient();
+    await staffPage.addPatient(patient);
+    await staffPage.expectSuccessToast(/added/i);
+    await staffPage.closeViewPatientViaCloseButton();
+    await staffPage.openAddVisitModal(patientRowMatch(patient));
+
+    await staffPage.closeAddVisitViaCancel();
+    await expect(staffPage.addVisitOverlay).toBeHidden();
+  });
+
+  // Verifies staff can close the add visit overlay with the X button.
+  test('closes add visit overlay with close button', async ({ page }) => {
+    const staffPage = new StaffDashboardPage(page);
+    const patient = buildPatient();
+    await staffPage.addPatient(patient);
+    await staffPage.expectSuccessToast(/added/i);
+    await staffPage.closeViewPatientViaCloseButton();
+    await staffPage.openAddVisitModal(patientRowMatch(patient));
+
+    await staffPage.closeAddVisitViaCloseButton();
+    await expect(staffPage.addVisitOverlay).toBeHidden();
   });
 
   // Verifies staff can add a visit history record for an existing patient.
   test('adds a visit history record', async ({ page }) => {
     const staffPage = new StaffDashboardPage(page);
     const visit = buildVisitHistory();
+    const patient = await addTestPatient(staffPage, {}, { leaveViewOpen: true });
 
-    await addTestPatient(staffPage);
-    await staffPage.addVisitHistory(visit);
+    await staffPage.closeViewPatientViaCloseButton();
+    await staffPage.addVisitHistory(visit, patientRowMatch(patient));
 
-    await expect(staffPage.alert).toContainText(/added/i);
+    await staffPage.expectSuccessToast(/updated/i);
+    await expect(staffPage.addVisitOverlay).toBeHidden();
+
+    await staffPage.openViewPatient(patientRowMatch(patient));
     await expect(staffPage.historyForm.historyEntries.first()).toContainText(visit.procedure);
   });
 
@@ -85,9 +208,10 @@ test.describe('Staff dashboard', () => {
   test('searches patients by date of birth', async ({ page }) => {
     const staffPage = new StaffDashboardPage(page);
     const patient = await addTestPatient(staffPage, {
-      dateOfBirth: '1985-06-15'
+      dateOfBirth: uniqueBirthDate()
     });
 
+    await staffPage.patientSearch.searchByName(patientRowMatch(patient));
     await staffPage.patientSearch.clear();
     await staffPage.patientSearch.searchByDateOfBirth(
       toSearchDateOfBirth(patient.dateOfBirth!),
