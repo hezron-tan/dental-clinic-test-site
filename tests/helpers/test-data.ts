@@ -1,3 +1,4 @@
+import { faker } from '@faker-js/faker';
 import type { ClinicFormData, PatientFormData, VisitHistoryFormData } from '../models';
 
 const DENTAL_PROCEDURES = [
@@ -11,9 +12,6 @@ const DENTAL_PROCEDURES = [
   'Other'
 ] as const;
 
-const FIRST_NAMES = ['Alex', 'Jordan', 'Taylor', 'Casey', 'Riley', 'Morgan', 'Quinn', 'Avery'];
-const LAST_NAMES = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis'];
-const STREETS = ['Oak St', 'Pine Ave', 'Maple Dr', 'Cedar Ln', 'Elm Blvd'];
 const CATCHPHRASES = [
   'Your smile, our priority',
   'Gentle care for every patient',
@@ -21,10 +19,16 @@ const CATCHPHRASES = [
 ];
 
 let seed = Date.now();
+faker.seed(seed);
 
 /** Set a fixed seed when you need reproducible values (e.g. debugging a flaky test). */
 export function seedFaker(nextSeed: number): void {
   seed = nextSeed;
+  faker.seed(nextSeed);
+}
+
+function portlandStreetAddress(): string {
+  return `${faker.location.streetAddress()}, Portland, OR`;
 }
 
 function nextRandom(): number {
@@ -104,12 +108,12 @@ export function buildPatient(overrides: Partial<PatientFormData> = {}): PatientF
   const suffix = uniqueSuffix();
 
   return {
-    firstName: pick(FIRST_NAMES),
-    lastName: `${pick(LAST_NAMES)}${suffix}`,
+    firstName: faker.person.firstName(),
+    lastName: `${faker.person.lastName()}${suffix}`,
     dateOfBirth: randomBirthDate(),
     email: testEmail('patient'),
     phone: portlandPhone(),
-    address: `${Math.floor(nextRandom() * 9000) + 100} ${pick(STREETS)}, Portland, OR`,
+    address: portlandStreetAddress(),
     ...overrides
   };
 }
@@ -119,7 +123,7 @@ export function buildVisitHistory(overrides: Partial<VisitHistoryFormData> = {})
     visitDate: recentVisitDate(),
     procedure: pick(DENTAL_PROCEDURES),
     description: 'Routine follow-up visit.',
-    dentist: `Dr. ${pick(LAST_NAMES)}`,
+    dentist: `Dr. ${faker.person.lastName()}`,
     ...overrides
   };
 }
@@ -127,7 +131,7 @@ export function buildVisitHistory(overrides: Partial<VisitHistoryFormData> = {})
 export function buildClinicUpdate(overrides: Partial<ClinicFormData> = {}): ClinicFormData {
   return {
     tagline: pick(CATCHPHRASES),
-    address: `${Math.floor(nextRandom() * 9000) + 100} ${pick(STREETS)}, Portland, OR`,
+    address: portlandStreetAddress(),
     phone: portlandPhone(),
     email: testEmail('clinic'),
     hours: 'Mon–Fri 8:00–17:00',
