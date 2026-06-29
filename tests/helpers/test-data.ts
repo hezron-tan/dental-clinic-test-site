@@ -105,11 +105,11 @@ function recentVisitDate(): string {
 }
 
 export function buildPatient(overrides: Partial<PatientFormData> = {}): PatientFormData {
-  const suffix = uniqueSuffix();
+  
 
   return {
     firstName: faker.person.firstName(),
-    lastName: `${faker.person.lastName()}${suffix}`,
+    lastName: faker.person.lastName(),
     dateOfBirth: randomBirthDate(),
     email: testEmail('patient'),
     phone: portlandPhone(),
