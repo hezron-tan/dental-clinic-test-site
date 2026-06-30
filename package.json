@@ -15,11 +15,15 @@
     "test:allure": "playwright test",
     "allure:generate": "allure generate allure-results --clean -o allure-report",
     "allure:open": "allure open allure-report",
-    "allure:serve": "allure serve allure-results"
+    "allure:serve": "allure serve allure-results",
+    "agents:init": "playwright init-agents --loop=claude",
+    "agents:init:copilot": "playwright init-agents --loop=copilot",
+    "agents:init:vscode": "playwright init-agents --loop=vscode"
   },
   "devDependencies": {
     "@faker-js/faker": "^10.5.0",
-    "@playwright/test": "^1.52.0",
+    "@playwright/mcp": "^0.0.68",
+    "@playwright/test": "^1.56.0",
     "allure-commandline": "^2.43.0",
     "allure-playwright": "^3.10.2",
     "dotenv": "^16.5.0"

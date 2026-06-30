@@ -93,6 +93,74 @@ The admin dashboard shows a **storage warning** when database usage exceeds 50% 
 
 Key `data-testid` attributes are on login, patient forms, clinic form, and navigation.
 
+### Playwright self-healing (Healer agent)
+
+Playwright ships a native **Healer** agent that repairs tests when UI changes break selectors (not when the app is actually broken). This repo uses a **heal-and-propose** pattern in CI: tests still gate merges; the Healer opens a PR with proposed fixes for you to review.
+
+Official docs: [Playwright Test Agents](https://playwright.dev/docs/test-agents)
+
+#### Step 1 — Upgrade Playwright and install dependencies
+
+Playwright agents require **v1.56+**:
+
+```bash
+npm install
+npx playwright install chromium
+```
+
+#### Step 2 — Initialize agent definitions
+
+Generate the Planner, Generator, and Healer agent files (re-run after Playwright upgrades):
+
+```bash
+npm run agents:init          # Claude Code / Cursor (recommended)
+# npm run agents:init:vscode   # VS Code agent panel
+# npm run agents:init:copilot  # GitHub Copilot
+```
+
+This creates agent instruction files under `.claude/agents/` (or `.github/agents/` for Copilot) and wires the [Playwright MCP](https://playwright.dev/docs/getting-started-mcp) server.
+
+#### Step 3 — Heal locally in Cursor
+
+With Playwright MCP enabled in Cursor, ask the Healer to fix a failing spec:
+
+> Use the Playwright Healer agent to fix failing tests in `tests/ui/login.spec.ts`. Follow Page Object Model — edit `tests/pages/` when locators break. Do not weaken assertions.
+
+The Healer will run tests, inspect the page via MCP, patch locators, and re-run until green.
+
+#### Step 4 — Add the GitHub secret for CI healing
+
+In **Settings → Secrets and variables → Actions**, add:
+
+| Secret | Value |
+|--------|-------|
+| `CURSOR_API_KEY` | API key from [Cursor Dashboard → Integrations](https://cursor.com/dashboard/integrations) |
+
+The Healer workflow is optional — without this secret, normal Playwright CI still runs unchanged. Usage is billed through your **Cursor plan** (not a separate Anthropic account).
+
+See also: [Cursor CLI in GitHub Actions](https://cursor.com/docs/cli/github-actions)
+
+#### Step 5 — How CI self-healing works
+
+Two workflows cooperate:
+
+| Workflow | When it runs | Purpose |
+|----------|--------------|---------|
+| **Playwright Tests** | Push / PR to `main` | Runs the suite; uploads traces on failure |
+| **Playwright Healer** | After a failed test run, or manually | Proposes locator fixes via PR |
+
+**Automatic:** When **Playwright Tests** or **Daily Playwright + Allure** fails, **Playwright Healer** starts automatically (if `CURSOR_API_KEY` is set).
+
+**Manual:** **Actions → Playwright Healer → Run workflow**. Optionally pass a spec path (e.g. `tests/ui/staff.spec.ts`).
+
+When triggered automatically after a failed run, the Healer checks out the same commit that failed so fixes apply to the correct branch.
+
+The Healer uses the [Cursor CLI](https://cursor.com/docs/cli/github-actions) with Playwright MCP (`.cursor/mcp.json`) in headless mode. It never auto-merges — review the PR like any other change.
+
+#### Tracing for the Healer
+
+`playwright.config.ts` uses `trace: 'retain-on-failure'` in CI so failed runs include traces in the **playwright-test-results** artifact. Download these from the failed **Playwright Tests** run if you want to debug before invoking the Healer.
+
 ### K6 load test
 
 ```bash
@@ -132,8 +200,10 @@ Use the `access_token` from the response as `Authorization: Bearer ...` for prot
 
 ```
 ├── .github/workflows/
-│   ├── deploy-pages.yml    # GitHub Pages deploy
-│   └── playwright.yml      # CI test run
+│   ├── deploy-pages.yml         # GitHub Pages deploy
+│   ├── playwright.yml           # CI test run
+│   ├── playwright-heal.yml        # Self-healing Healer (after failures)
+│   └── playwright-daily-allure.yml
 ├── docs/SUPABASE_SETUP.md  # Step-by-step backend setup
 ├── tests/
 │   ├── ui/                 # Playwright UI tests
