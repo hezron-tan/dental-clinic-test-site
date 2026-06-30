@@ -20,7 +20,8 @@ export default defineConfig({
   ],
   use: {
     baseURL,
-    trace: 'on-first-retry',
+    // retain-on-failure gives the Healer agent traces to inspect in CI
+    trace: process.env.CI ? 'retain-on-failure' : 'on-first-retry',
     screenshot: 'only-on-failure'
   },
   projects: [

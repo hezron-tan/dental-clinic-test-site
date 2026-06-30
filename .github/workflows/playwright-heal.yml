@@ -1,0 +1,104 @@
+name: Playwright Healer
+
+# Runs the Playwright Healer agent after test failures (heal-and-propose).
+# Requires CURSOR_API_KEY — see README "Playwright self-healing".
+on:
+  workflow_dispatch:
+    inputs:
+      test_path:
+        description: Optional spec path (e.g. tests/ui/login.spec.ts). Leave empty to heal all failures.
+        required: false
+        type: string
+  workflow_run:
+    workflows: [Playwright Tests, Daily Playwright + Allure]
+    types: [completed]
+
+jobs:
+  heal:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'failure'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate config.js
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: node scripts/generate-config.mjs
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Set heal test scope
+        run: |
+          if [ -n "${{ inputs.test_path }}" ]; then
+            echo "HEAL_TEST_CMD=npm test -- ${{ inputs.test_path }}" >> "$GITHUB_ENV"
+          else
+            echo "HEAL_TEST_CMD=npm test" >> "$GITHUB_ENV"
+          fi
+
+      - name: Install Cursor CLI
+        run: |
+          curl https://cursor.com/install -fsS | bash
+          echo "$HOME/.cursor/bin" >> "$GITHUB_PATH"
+
+      - name: Configure git for agent
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Run Playwright Healer (Cursor)
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          STAFF_EMAIL: ${{ secrets.STAFF_EMAIL }}
+          STAFF_PASSWORD: ${{ secrets.STAFF_PASSWORD }}
+          CI: true
+        run: |
+          agent -p "You are the Playwright Test Healer for this dental clinic test site.
+
+          Follow agent instructions in .claude/agents/ or .github/agents/ if they exist.
+          Use Playwright MCP tools from .cursor/mcp.json to inspect the live page.
+
+          Rules:
+          - Fix stale selectors and timing issues only. Do NOT weaken assertions to force a pass.
+          - Prefer role-based locators (getByRole, getByLabel, getByTestId).
+          - This suite uses Page Object Model — update tests/pages/ when a locator breaks.
+          - If a failure is a real application bug, stop and report it instead of patching the test.
+
+          Steps:
+          1. Run \`${HEAL_TEST_CMD}\` to reproduce failures.
+          2. For each selector-related failure, inspect the page with Playwright MCP tools and patch the test or page object.
+          3. Re-run until tests pass or you confirm an app bug.
+          4. Open a pull request titled \"fix(tests): Playwright healer repairs\" with a summary of what changed and why.
+
+          Environment: Supabase credentials are in env vars; the config server starts via playwright.config.ts webServer." \
+            --model composer-2.5
