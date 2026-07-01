@@ -1,60 +1,53 @@
-import { expect, test } from '@playwright/test';
+import { adminTest, expect } from '../fixtures';
 import { adminAuthState } from '../helpers/auth-state';
 import { hasAdminCredentials } from '../helpers/supabase';
-import { buildClinicUpdate, buildPatient, patientRowMatch, testEmail } from '../helpers/test-data';
-import { AdminDashboardPage, PublicPage } from '../pages';
+import { buildClinicUpdate, buildPatient, patientRowMatch, patientSearchQuery, testEmail } from '../helpers/test-data';
+import { PublicPage } from '../pages';
 
 const credentialsMessage =
   'Set ADMIN_PASSWORD in .env to match your Supabase admin user (see .env.example).';
 
-test.describe('Admin dashboard', () => {
-  test.use({ storageState: adminAuthState });
+adminTest.describe('Admin dashboard', () => {
+  adminTest.use({ storageState: adminAuthState });
 
-  test.beforeEach(async ({ page }) => {
-    test.skip(!hasAdminCredentials(), credentialsMessage);
+  adminTest.beforeEach(async ({ adminPage }) => {
+    adminTest.skip(!hasAdminCredentials(), credentialsMessage);
 
-    const adminPage = new AdminDashboardPage(page);
     await adminPage.open();
     await adminPage.waitForReady();
   });
 
-  // Verifies the admin dashboard shows the clinic form and patient management tab.
-  test('shows clinic form and patient table', async ({ page }) => {
-    const adminPage = new AdminDashboardPage(page);
-
+  adminTest('shows clinic form and patient table', async ({ adminPage }) => {
     await expect(adminPage.clinicForm).toBeVisible();
     await adminPage.showPatientsTab();
     await expect(adminPage.patientTable.table).toBeVisible();
     await expect(adminPage.patientPagination.bar).toBeVisible();
   });
 
-  // Verifies updating the clinic tagline saves successfully and appears on the public homepage.
-  test('updates clinic tagline', async ({ page }) => {
-    const adminPage = new AdminDashboardPage(page);
+  adminTest('updates clinic tagline', async ({ adminPage, page }) => {
     const publicPage = new PublicPage(page);
     const update = buildClinicUpdate();
 
     await adminPage.updateClinicInfo(update);
+    await expect(adminPage.alert).toContainText(/saved/i);
 
     await publicPage.open();
     await expect(publicPage.clinicTagline).toHaveText(update.tagline!);
   });
 
-  // Verifies an admin can add a new patient and find them via name search.
-  test('adds a new patient', async ({ page }) => {
-    const adminPage = new AdminDashboardPage(page);
+  adminTest('adds a new patient', async ({ adminPage }) => {
     const patient = buildPatient();
 
     await adminPage.addPatient(patient);
 
     await expect(adminPage.alert).toContainText(/saved/i);
-    await adminPage.patientSearch.searchByName(patientRowMatch(patient));
+    await adminPage.patientSearch.searchByName(patientSearchQuery(patient));
+    await expect(adminPage.patientSearch.rowByName(patientRowMatch(patient))).toBeVisible({
+      timeout: 10_000
+    });
   });
 
-  // Verifies switching between clinic and patients tabs shows the correct panels.
-  test('switches between clinic and patients tabs', async ({ page }) => {
-    const adminPage = new AdminDashboardPage(page);
-
+  adminTest('switches between clinic and patients tabs', async ({ adminPage }) => {
     await expect(adminPage.clinicPanel).toBeVisible();
     await expect(adminPage.clinicForm).toBeVisible();
 
@@ -66,9 +59,7 @@ test.describe('Admin dashboard', () => {
     await expect(adminPage.clinicPanel).toBeVisible();
   });
 
-  // Verifies an admin can edit a patient's email from the edit modal.
-  test('edits an existing patient', async ({ page }) => {
-    const adminPage = new AdminDashboardPage(page);
+  adminTest('edits an existing patient', async ({ adminPage }) => {
     const patient = buildPatient();
     const updatedEmail = testEmail('updated');
 
@@ -78,42 +69,48 @@ test.describe('Admin dashboard', () => {
     await adminPage.editPatient(patientRowMatch(patient), { email: updatedEmail });
     await expect(adminPage.alert).toContainText(/saved/i);
 
-    await adminPage.patientSearch.searchByName(patientRowMatch(patient));
+    await adminPage.patientSearch.searchByName(patientSearchQuery(patient));
+    await expect(adminPage.patientSearch.rowByName(patientRowMatch(patient))).toBeVisible({
+      timeout: 10_000
+    });
     await expect(adminPage.patientTable.rowByName(patientRowMatch(patient))).toContainText(updatedEmail);
   });
 
-  // Verifies an admin can delete a patient after confirming the dialog.
-  test('deletes a patient', async ({ page }) => {
-    const adminPage = new AdminDashboardPage(page);
+  adminTest('deletes a patient', async ({ adminPage, patientTracker }) => {
     const patient = buildPatient();
 
     await adminPage.addPatient(patient);
     await expect(adminPage.alert).toContainText(/saved/i);
 
+    patientTracker.untrack(patient);
     await adminPage.deletePatient(patientRowMatch(patient));
-    await adminPage.patientSearch.search({ name: patientRowMatch(patient) });
+    await expect(adminPage.alert).toContainText(/deleted/i);
+
+    await adminPage.patientSearch.search({ name: patientSearchQuery(patient) });
     await expect(adminPage.patientTable.rowByName(patientRowMatch(patient))).toHaveCount(0);
   });
 
-  // Verifies the patient search form filters results by name.
-  test('searches patients by name', async ({ page }) => {
-    const adminPage = new AdminDashboardPage(page);
+  adminTest('searches patients by name', async ({ adminPage }) => {
     const targetPatient = buildPatient();
     const otherPatient = buildPatient();
 
     await adminPage.addPatient(targetPatient);
     await adminPage.addPatient(otherPatient);
 
-    await adminPage.patientSearch.searchByName(patientRowMatch(targetPatient));
-    await expect(adminPage.patientTable.rowByName(patientRowMatch(targetPatient))).toBeVisible();
+    await adminPage.patientSearch.searchByName(patientSearchQuery(targetPatient));
+    await expect(adminPage.patientSearch.rowByName(patientRowMatch(targetPatient))).toBeVisible({
+      timeout: 10_000
+    });
     await expect(adminPage.patientTable.rowByName(patientRowMatch(otherPatient))).toHaveCount(0);
   });
 
-  // Verifies pagination controls advance through the patient list.
-  test('paginates the patient list', async ({ page }) => {
-    const adminPage = new AdminDashboardPage(page);
-
+  adminTest('paginates the patient list', async ({ adminPage }) => {
     await adminPage.showPatientsTab();
+    adminTest.skip(
+      !(await adminPage.patientPagination.hasMultiplePages()),
+      'Requires at least 2 pages of patients'
+    );
+
     await expect(adminPage.patientPagination.pageInfo).toContainText(/Page 1 of/i);
 
     await adminPage.patientPagination.goToNextPage();
@@ -123,13 +120,12 @@ test.describe('Admin dashboard', () => {
     await expect(adminPage.patientPagination.pageInfo).toContainText(/Page 1 of/i);
   });
 
-  // Verifies updated clinic contact fields appear on the public homepage.
-  test('updates clinic contact info on public site', async ({ page }) => {
-    const adminPage = new AdminDashboardPage(page);
+  adminTest('updates clinic contact info on public site', async ({ adminPage, page }) => {
     const publicPage = new PublicPage(page);
     const update = buildClinicUpdate();
 
     await adminPage.updateClinicInfo(update);
+    await expect(adminPage.alert).toContainText(/saved/i);
 
     await publicPage.open();
     await expect(publicPage.clinicAddress).toHaveText(update.address!);
@@ -138,10 +134,7 @@ test.describe('Admin dashboard', () => {
     await expect(publicPage.clinicHours).toHaveText(update.hours!);
   });
 
-  // Verifies logging out from the admin dashboard returns to the login page.
-  test('logs out to login page', async ({ page }) => {
-    const adminPage = new AdminDashboardPage(page);
-
+  adminTest('logs out to login page', async ({ adminPage, page }) => {
     await adminPage.logout();
 
     await expect(page).toHaveURL(/login\.html/);

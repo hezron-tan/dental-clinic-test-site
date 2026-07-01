@@ -55,3 +55,65 @@ export async function deletePatientViaApi(request: APIRequestContext, id: string
 export async function getStaffAccessToken(): Promise<string> {
   return getAccessToken(staffEmail, staffPassword);
 }
+
+export async function findPatientIdByName(
+  request: APIRequestContext,
+  firstName: string,
+  lastName: string
+): Promise<string | null> {
+  const token = await getAccessToken(adminEmail, adminPassword);
+  const res = await request.get(
+    `${supabaseUrl}/rest/v1/patients?first_name=eq.${encodeURIComponent(firstName)}&last_name=eq.${encodeURIComponent(lastName)}&select=id&limit=1`,
+    { headers: supabaseHeaders(token) }
+  );
+
+  if (!res.ok()) {
+    throw new Error(`Failed to find patient (${res.status()}): ${await res.text()}`);
+  }
+
+  const rows = (await res.json()) as { id: string }[];
+  return rows[0]?.id ?? null;
+}
+
+export async function cleanupPatient(
+  request: APIRequestContext,
+  patient: PatientFormData
+): Promise<void> {
+  const id = await findPatientIdByName(request, patient.firstName, patient.lastName);
+  if (id) {
+    await deletePatientViaApi(request, id);
+  }
+}
+
+export async function cleanupPatients(
+  request: APIRequestContext,
+  patients: PatientFormData[]
+): Promise<void> {
+  for (const patient of patients) {
+    await cleanupPatient(request, patient);
+  }
+}
+
+/** Tracks patients created during UI tests for API cleanup in afterEach. */
+export class PatientTracker {
+  private readonly patients: PatientFormData[] = [];
+
+  track(patient: PatientFormData): void {
+    this.patients.push(patient);
+  }
+
+  untrack(patient: PatientFormData): void {
+    const index = this.patients.findIndex(
+      (p) => p.firstName === patient.firstName && p.lastName === patient.lastName
+    );
+    if (index >= 0) {
+      this.patients.splice(index, 1);
+    }
+  }
+
+  async cleanup(request: APIRequestContext): Promise<void> {
+    const pending = [...this.patients];
+    this.patients.length = 0;
+    await cleanupPatients(request, pending);
+  }
+}
