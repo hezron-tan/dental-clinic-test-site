@@ -1,4 +1,4 @@
-import { expect, type Locator, type Page } from '@playwright/test';
+import { type Locator, type Page } from '@playwright/test';
 import type { LoginCredentials } from '../models';
 import {
   adminEmail,
@@ -74,7 +74,7 @@ export class LoginPage extends BasePage {
     const dashboardUrl = dashboardUrlByRole[role];
 
     try {
-      await expect(this.page).toHaveURL(dashboardUrl, { timeout: 15_000 });
+      await this.page.waitForURL(dashboardUrl, { timeout: 15_000 });
     } catch {
       if (await this.alert.isVisible()) {
         throw new Error(`Login failed: ${(await this.alert.textContent())?.trim()}`);

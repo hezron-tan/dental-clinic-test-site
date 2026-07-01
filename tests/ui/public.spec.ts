@@ -1,11 +1,7 @@
-import { expect, test } from '@playwright/test';
-import { LoginPage, PublicPage } from '../pages';
+import { expect, test } from '../fixtures';
 
 test.describe('Public clinic site', () => {
-  // Verifies the homepage renders clinic name, contact details, and office hours.
-  test('displays clinic name and contact info', async ({ page }) => {
-    const publicPage = new PublicPage(page);
-
+  test('displays clinic name and contact info', async ({ publicPage }) => {
     await publicPage.open();
 
     await expect(publicPage.clinicName).toBeVisible();
@@ -16,11 +12,7 @@ test.describe('Public clinic site', () => {
     await expect(publicPage.clinicHours).toBeVisible();
   });
 
-  // Verifies the Staff Login nav link opens the login page.
-  test('navigates to staff login', async ({ page }) => {
-    const publicPage = new PublicPage(page);
-    const loginPage = new LoginPage(page);
-
+  test('navigates to staff login', async ({ publicPage, loginPage, page }) => {
     await publicPage.open();
     await publicPage.goToLogin();
 
@@ -28,24 +20,17 @@ test.describe('Public clinic site', () => {
     await expect(loginPage.form).toBeVisible();
   });
 
-  // Verifies the Staff Portal button in the welcome section opens the login page.
-  test('navigates to staff portal from welcome section', async ({ page }) => {
-    const publicPage = new PublicPage(page);
-    const loginPage = new LoginPage(page);
-
+  test('navigates to staff portal from welcome section', async ({ publicPage, loginPage, page }) => {
     await publicPage.open();
-    await page.getByRole('link', { name: 'Staff Portal' }).click();
+    await publicPage.navToStaffPortal();
 
     await expect(page).toHaveURL(/login\.html/);
     await expect(loginPage.form).toBeVisible();
   });
 
-  // Verifies the Contact nav link scrolls to the contact section.
-  test('navigates to contact section', async ({ page }) => {
-    const publicPage = new PublicPage(page);
-
+  test('navigates to contact section', async ({ publicPage }) => {
     await publicPage.open();
-    await page.getByRole('link', { name: 'Contact', exact: true }).first().click();
+    await publicPage.scrollToContact();
 
     await expect(publicPage.clinicAddress).toBeInViewport();
   });

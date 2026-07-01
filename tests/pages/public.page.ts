@@ -43,4 +43,20 @@ export class PublicPage extends BasePage {
   async goToLogin(): Promise<void> {
     await this.navLogin.click();
   }
+
+  get staffPortalLink(): Locator {
+    return this.page.getByRole('link', { name: 'Staff Portal' });
+  }
+
+  get contactNavLink(): Locator {
+    return this.page.getByRole('link', { name: 'Contact', exact: true }).first();
+  }
+
+  async navToStaffPortal(): Promise<void> {
+    await this.staffPortalLink.click();
+  }
+
+  async scrollToContact(): Promise<void> {
+    await this.contactNavLink.click();
+  }
 }

@@ -1,12 +1,14 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 import type { ClinicFormData, PatientFormData } from '../models';
+import { searchQueryFromRowLabel } from '../helpers/test-data';
+import { BasePage } from './base.page';
 import { LoginPage } from './login.page';
 import { PatientFormComponent } from './components/patient-form.component';
 import { PatientPaginationComponent } from './components/patient-pagination.component';
 import { PatientSearchComponent } from './components/patient-search.component';
 import { PatientTableComponent } from './components/patient-table.component';
 
-export class AdminDashboardPage {
+export class AdminDashboardPage extends BasePage {
   readonly path = '/admin/';
 
   readonly patientTable: PatientTableComponent;
@@ -14,7 +16,8 @@ export class AdminDashboardPage {
   readonly patientSearch: PatientSearchComponent;
   readonly patientForm: PatientFormComponent;
 
-  constructor(private readonly page: Page) {
+  constructor(page: Page) {
+    super(page);
     this.patientTable = new PatientTableComponent(page);
     this.patientPagination = new PatientPaginationComponent(page);
     this.patientForm = new PatientFormComponent(page);
@@ -102,7 +105,7 @@ export class AdminDashboardPage {
   }
 
   async open(): Promise<void> {
-    await this.page.goto(this.path);
+    await this.goto(this.path);
   }
 
   async openViaLogin(loginPage: LoginPage): Promise<void> {
@@ -121,16 +124,15 @@ export class AdminDashboardPage {
   }
 
   async showPatientsTab(): Promise<void> {
-    await expect(async () => {
-      const selected = await this.patientsTab.getAttribute('aria-selected');
-      if (selected !== 'true') {
-        await this.patientsTab.click();
-      }
-      await expect(this.patientsPanel).toBeVisible();
-    }).toPass({ timeout: 15_000 });
+    const selected = await this.patientsTab.getAttribute('aria-selected');
+    if (selected !== 'true') {
+      await this.patientsTab.click();
+    }
+    await this.patientsPanel.waitFor({ state: 'visible', timeout: 15_000 });
   }
 
   async waitForClinicFormLoaded(): Promise<void> {
+    await this.clinicNameInput.waitFor({ state: 'visible', timeout: 10_000 });
     await expect(this.clinicNameInput).not.toBeEmpty({ timeout: 10_000 });
   }
 
@@ -162,7 +164,6 @@ export class AdminDashboardPage {
 
   async saveClinicInfo(): Promise<void> {
     await this.saveClinicButton.click();
-    await expect(this.alert).toContainText(/saved/i, { timeout: 10_000 });
   }
 
   async updateClinicInfo(data: ClinicFormData): Promise<void> {
@@ -173,8 +174,8 @@ export class AdminDashboardPage {
 
   async openAddPatientModal(): Promise<void> {
     await this.showPatientsTab();
-    await expect(this.addPatientButton).toBeVisible();
     await this.addPatientButton.click();
+    await this.patientFormOverlay.waitFor({ state: 'visible' });
   }
 
   async addPatient(data: PatientFormData): Promise<void> {
@@ -188,9 +189,10 @@ export class AdminDashboardPage {
 
   async editPatient(name: string, data: Partial<PatientFormData>): Promise<void> {
     await this.showPatientsTab();
-    await this.patientSearch.searchByName(name);
+    await this.patientSearch.searchByName(searchQueryFromRowLabel(name));
+    await this.patientTable.rowByName(name).first().waitFor({ state: 'visible', timeout: 10_000 });
     await this.patientTable.clickEditForPatient(name);
-    await expect(this.patientFormOverlay).toBeVisible();
+    await this.patientFormOverlay.waitFor({ state: 'visible' });
 
     if (data.firstName !== undefined) {
       await this.patientForm.firstNameInput.fill(data.firstName);
@@ -216,9 +218,9 @@ export class AdminDashboardPage {
 
   async deletePatient(name: string): Promise<void> {
     await this.showPatientsTab();
-    await this.patientSearch.searchByName(name);
+    await this.patientSearch.searchByName(searchQueryFromRowLabel(name));
+    await this.patientTable.rowByName(name).first().waitFor({ state: 'visible', timeout: 10_000 });
     this.page.once('dialog', (dialog) => dialog.accept());
     await this.patientTable.clickDeleteForPatient(name);
-    await expect(this.alert).toContainText(/deleted/i, { timeout: 10_000 });
   }
 }

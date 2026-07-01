@@ -1,26 +1,26 @@
-import { expect, test } from '@playwright/test';
-import {
-  AdminDashboardPage,
-  LoginPage,
-  StaffDashboardPage
-} from '../pages';
+import { emptyStorageState, expect, test, unauthenticatedTest } from '../fixtures';
+import { AdminDashboardPage, StaffDashboardPage } from '../pages';
 import { hasAdminCredentials, hasStaffCredentials } from '../helpers/supabase';
 import { adminAuthState, staffAuthState } from '../helpers/auth-state';
-import { buildPatient, buildVisitHistory, patientRowMatch, portlandPhone } from '../helpers/test-data';
+import { buildPatient, buildVisitHistory, patientRowMatch, patientSearchQuery, portlandPhone } from '../helpers/test-data';
 
 const adminCredentialsMessage =
   'Set ADMIN_PASSWORD in .env to match your Supabase admin user (see .env.example).';
 const staffCredentialsMessage =
   'Set STAFF_PASSWORD in .env to match your Supabase staff user (see .env.example).';
 
-test.describe('Login — negative scenarios', () => {
-  test.beforeEach(async ({ page }) => {
-    await new LoginPage(page).open();
+async function expectErrorToast(staffPage: StaffDashboardPage, message: RegExp): Promise<void> {
+  await expect(staffPage.errorToast).toBeVisible();
+  await expect(staffPage.errorToast).toHaveClass(/toast-error/);
+  await expect(staffPage.errorToast).toContainText(message);
+}
+
+unauthenticatedTest.describe('Login — negative scenarios', () => {
+  unauthenticatedTest.beforeEach(async ({ loginPage }) => {
+    await loginPage.open();
   });
 
-  test('shows a specific error message for invalid credentials', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-
+  unauthenticatedTest('shows a specific error message for invalid credentials', async ({ loginPage, page }) => {
     await loginPage.login({ email: 'wrong@clinic.test', password: 'wrong-password' });
 
     await expect(loginPage.alert).toBeVisible();
@@ -29,9 +29,7 @@ test.describe('Login — negative scenarios', () => {
     await expect(page).toHaveURL(/login\.html/);
   });
 
-  test('blocks submit when email and password are empty', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-
+  unauthenticatedTest('blocks submit when email and password are empty', async ({ loginPage, page }) => {
     await loginPage.submitButton.click();
 
     await expect(loginPage.emailInput).toHaveJSProperty('validity.valid', false);
@@ -39,9 +37,7 @@ test.describe('Login — negative scenarios', () => {
     await expect(page).toHaveURL(/login\.html/);
   });
 
-  test('blocks submit when email format is invalid', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-
+  unauthenticatedTest('blocks submit when email format is invalid', async ({ loginPage, page }) => {
     await loginPage.emailInput.fill('not-an-email');
     await loginPage.passwordInput.fill('some-password');
     await loginPage.submitButton.click();
@@ -53,6 +49,8 @@ test.describe('Login — negative scenarios', () => {
 });
 
 test.describe('Route protection — negative scenarios', () => {
+  test.use({ storageState: emptyStorageState });
+
   test('redirects unauthenticated users from admin dashboard to login', async ({ page }) => {
     await page.goto('/admin/');
     await expect(page).toHaveURL(/login\.html/);
@@ -71,9 +69,7 @@ test.describe('Route protection — negative scenarios', () => {
 
       await page.goto('/staff/');
       await page.goto('/admin/');
-      await page.waitForTimeout(2000);
 
-      await expect(page).not.toHaveURL(/admin\/?$/);
       await expect(page).toHaveURL(/staff\/?/);
     });
   });
@@ -144,18 +140,23 @@ test.describe('Admin dashboard — negative scenarios', () => {
     await expect(adminPage.alert).toBeHidden();
   });
 
-  test('does not delete a patient when the confirmation dialog is dismissed', async ({ page }) => {
+  test('does not delete a patient when the confirmation dialog is dismissed', async ({
+    page,
+    patientTracker
+  }) => {
     const adminPage = new AdminDashboardPage(page);
     const patient = buildPatient();
 
     await adminPage.addPatient(patient);
-    await adminPage.patientSearch.searchByName(patientRowMatch(patient));
+    patientTracker.track(patient);
+    await adminPage.patientSearch.searchByName(patientSearchQuery(patient));
+    await expect(adminPage.patientSearch.rowByName(patientRowMatch(patient))).toBeVisible();
 
     page.once('dialog', (dialog) => dialog.dismiss());
     await adminPage.patientTable.clickDeleteForPatient(patientRowMatch(patient));
 
-    await adminPage.patientSearch.searchByName(patientRowMatch(patient));
-    await expect(adminPage.patientTable.rowByName(patientRowMatch(patient))).toBeVisible();
+    await adminPage.patientSearch.searchByName(patientSearchQuery(patient));
+    await expect(adminPage.patientSearch.rowByName(patientRowMatch(patient))).toBeVisible();
   });
 });
 
@@ -236,12 +237,14 @@ test.describe('Staff dashboard — negative scenarios', () => {
   });
 
   test('keeps view overlay open and shows error toast when patient save fails', async ({
-    page
+    page,
+    patientTracker
   }) => {
     const staffPage = new StaffDashboardPage(page);
     const patient = buildPatient();
 
     await staffPage.addPatient(patient);
+    patientTracker.track(patient);
     await staffPage.enterEditMode();
 
     await page.route('**/rest/v1/patients*', (route) => {
@@ -259,18 +262,20 @@ test.describe('Staff dashboard — negative scenarios', () => {
     await staffPage.patientForm.phoneInput.fill(portlandPhone());
     await staffPage.patientForm.submit();
 
-    await staffPage.expectErrorToast(/can't be updated/i);
+    await expectErrorToast(staffPage, /can't be updated/i);
     await expect(staffPage.viewPatientOverlay).toBeVisible();
   });
 
   test('keeps add visit overlay open and shows error toast when visit save fails', async ({
-    page
+    page,
+    patientTracker
   }) => {
     const staffPage = new StaffDashboardPage(page);
     const patient = buildPatient();
     const visit = buildVisitHistory();
 
     await staffPage.addPatient(patient);
+    patientTracker.track(patient);
     await staffPage.closeViewPatientViaCloseButton();
     await staffPage.openAddVisitModal(patientRowMatch(patient));
 
@@ -288,17 +293,21 @@ test.describe('Staff dashboard — negative scenarios', () => {
 
     await staffPage.historyForm.fillAndSubmit(visit);
 
-    await staffPage.expectErrorToast(/visit can't be updated/i);
+    await expectErrorToast(staffPage, /visit can't be updated/i);
     await expect(staffPage.addVisitOverlay).toBeVisible();
   });
 
   test('blocks saving patient details when required name fields are cleared in edit mode', async ({
-    page
+    page,
+    patientTracker
   }) => {
     const staffPage = new StaffDashboardPage(page);
+    const patient = buildPatient();
 
-    await staffPage.addPatient(buildPatient());
+    await staffPage.addPatient(patient);
+    patientTracker.track(patient);
     await staffPage.dismissToast();
+    await expect(staffPage.toast).toHaveCount(0);
     await staffPage.enterEditMode();
     await staffPage.patientForm.firstNameInput.fill('');
     await staffPage.patientForm.submit();

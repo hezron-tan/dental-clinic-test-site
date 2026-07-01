@@ -26,4 +26,14 @@ export class PatientPaginationComponent {
   async goToPreviousPage(): Promise<void> {
     await this.prevButton.click();
   }
+
+  async totalPages(): Promise<number> {
+    const text = await this.pageInfo.textContent();
+    const match = text?.match(/Page \d+ of (\d+)/i);
+    return match ? Number.parseInt(match[1], 10) : 1;
+  }
+
+  async hasMultiplePages(): Promise<boolean> {
+    return (await this.totalPages()) > 1;
+  }
 }

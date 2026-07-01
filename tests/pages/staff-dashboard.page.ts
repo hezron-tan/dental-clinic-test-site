@@ -1,5 +1,7 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 import type { PatientFormData, VisitHistoryFormData } from '../models';
+import { searchQueryFromRowLabel } from '../helpers/test-data';
+import { BasePage } from './base.page';
 import { LoginPage } from './login.page';
 import { HistoryFormComponent } from './components/history-form.component';
 import { PatientFormComponent } from './components/patient-form.component';
@@ -7,7 +9,7 @@ import { PatientPaginationComponent } from './components/patient-pagination.comp
 import { PatientSearchComponent } from './components/patient-search.component';
 import { PatientTableComponent } from './components/patient-table.component';
 
-export class StaffDashboardPage {
+export class StaffDashboardPage extends BasePage {
   readonly path = '/staff/';
 
   readonly patientTable: PatientTableComponent;
@@ -16,7 +18,8 @@ export class StaffDashboardPage {
   readonly patientForm: PatientFormComponent;
   readonly historyForm: HistoryFormComponent;
 
-  constructor(private readonly page: Page) {
+  constructor(page: Page) {
+    super(page);
     this.patientTable = new PatientTableComponent(page);
     this.patientPagination = new PatientPaginationComponent(page);
     this.patientSearch = new PatientSearchComponent(page);
@@ -132,8 +135,20 @@ export class StaffDashboardPage {
     return this.page.getByTestId('close-add-patient-overlay');
   }
 
+  get deletePatientButtons(): Locator {
+    return this.page.getByTestId('delete-patient');
+  }
+
+  get firstRowViewButton(): Locator {
+    return this.patientTable.rows.first().getByTestId('view-patient');
+  }
+
+  get firstRowAddVisitButton(): Locator {
+    return this.patientTable.rows.first().getByTestId('add-visit-patient');
+  }
+
   async open(): Promise<void> {
-    await this.page.goto(this.path);
+    await this.goto(this.path);
   }
 
   async openViaLogin(loginPage: LoginPage): Promise<void> {
@@ -156,13 +171,11 @@ export class StaffDashboardPage {
   }
 
   async openAddPatientModal(): Promise<void> {
-    await expect(async () => {
-      if (await this.addPatientOverlay.isHidden()) {
-        await this.addPatientButton.click();
-      }
-      await expect(this.addPatientOverlay).toBeVisible();
-      await expect(this.addPatientFirstNameInput).toBeVisible();
-    }).toPass({ timeout: 15_000 });
+    if (await this.addPatientOverlay.isHidden()) {
+      await this.addPatientButton.click();
+    }
+    await this.addPatientOverlay.waitFor({ state: 'visible', timeout: 15_000 });
+    await this.addPatientFirstNameInput.waitFor({ state: 'visible', timeout: 15_000 });
   }
 
   async fillAddPatientForm(data: PatientFormData): Promise<void> {
@@ -198,25 +211,23 @@ export class StaffDashboardPage {
   }
 
   async openViewPatient(name: string): Promise<void> {
-    await this.patientSearch.searchByName(name);
+    await this.patientSearch.searchByName(searchQueryFromRowLabel(name));
+    await this.patientTable.rowByName(name).first().waitFor({ state: 'visible', timeout: 10_000 });
     await this.patientTable.clickViewForPatient(name);
-    await expect(this.viewPatientOverlay).toBeVisible();
+    await this.viewPatientOverlay.waitFor({ state: 'visible' });
   }
 
   async closeViewPatientViaCancel(): Promise<void> {
     await this.cancelViewPatientButton.click();
-    await expect(this.viewPatientOverlay).toBeHidden();
   }
 
   async closeViewPatientViaCloseButton(): Promise<void> {
     await this.closeViewPatientButton.click();
-    await expect(this.viewPatientOverlay).toBeHidden();
   }
 
   async enterEditMode(): Promise<void> {
     await this.editPatientButton.click();
-    await expect(this.patientEditView).toBeVisible();
-    await expect(this.patientReadonlyView).toBeHidden();
+    await this.patientEditView.waitFor({ state: 'visible' });
   }
 
   async updatePatient(data: PatientFormData): Promise<void> {
@@ -224,19 +235,18 @@ export class StaffDashboardPage {
   }
 
   async openAddVisitModal(name: string): Promise<void> {
-    await this.patientSearch.searchByName(name);
+    await this.patientSearch.searchByName(searchQueryFromRowLabel(name));
+    await this.patientTable.rowByName(name).first().waitFor({ state: 'visible', timeout: 10_000 });
     await this.patientTable.clickAddVisitForPatient(name);
-    await expect(this.addVisitOverlay).toBeVisible();
+    await this.addVisitOverlay.waitFor({ state: 'visible' });
   }
 
   async closeAddVisitViaCancel(): Promise<void> {
     await this.cancelAddVisitButton.click();
-    await expect(this.addVisitOverlay).toBeHidden();
   }
 
   async closeAddVisitViaCloseButton(): Promise<void> {
     await this.closeAddVisitButton.click();
-    await expect(this.addVisitOverlay).toBeHidden();
   }
 
   async addVisitHistory(data: VisitHistoryFormData, patientName?: string): Promise<void> {
@@ -246,22 +256,15 @@ export class StaffDashboardPage {
     await this.historyForm.fillAndSubmit(data);
   }
 
-  async expectSuccessToast(message: RegExp): Promise<void> {
-    const toast = this.toast.last();
-    await expect(toast).toBeVisible();
-    await expect(toast).toHaveClass(/toast-success/);
-    await expect(toast).toContainText(message);
+  get successToast(): Locator {
+    return this.toast.last();
   }
 
-  async expectErrorToast(message: RegExp): Promise<void> {
-    const toast = this.toast.last();
-    await expect(toast).toBeVisible();
-    await expect(toast).toHaveClass(/toast-error/);
-    await expect(toast).toContainText(message);
+  get errorToast(): Locator {
+    return this.toast.last();
   }
 
   async dismissToast(): Promise<void> {
     await this.toast.last().locator('.toast-close').click();
-    await expect(this.toast).toHaveCount(0);
   }
 }
