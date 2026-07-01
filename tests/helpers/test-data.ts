@@ -71,9 +71,20 @@ export function toApiPatient(data: PatientFormData) {
   };
 }
 
-/** Substring used to locate a patient row in the dashboard table/search. */
+/** Substring used to locate a patient row in the dashboard table. */
 export function patientRowMatch(patient: PatientFormData): string {
+  return `${patient.lastName}, ${patient.firstName}`;
+}
+
+/** Name query for the search form (matches first or last name fields). */
+export function patientSearchQuery(patient: PatientFormData): string {
   return patient.lastName;
+}
+
+/** Derives a search query from a table row label such as "Last, First". */
+export function searchQueryFromRowLabel(rowLabel: string): string {
+  const [lastName] = rowLabel.split(',');
+  return lastName.trim();
 }
 
 /** Converts an ISO date (yyyy-mm-dd) to the dd/mm/yyyy format used by staff search. */

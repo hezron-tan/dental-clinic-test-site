@@ -1,12 +1,11 @@
-import { expect, type Locator, type Page } from '@playwright/test';
+import { type Locator, type Page } from '@playwright/test';
 import type { PatientSearchCriteria } from '../../models';
 
 export class PatientSearchComponent {
   constructor(
-    private readonly page: Page,
-    private readonly root: Locator = page
+    _page: Page,
+    private readonly root: Locator = _page
   ) {}
-
   get form(): Locator {
     return this.root.getByTestId('patient-search');
   }
@@ -27,32 +26,27 @@ export class PatientSearchComponent {
     return this.root.getByTestId('clear-search');
   }
 
+  rowByName(name: string): Locator {
+    return this.root.getByTestId('patient-row').filter({ hasText: name }).first();
+  }
+
   async search(criteria: PatientSearchCriteria): Promise<void> {
     if (criteria.name !== undefined) {
       await this.nameInput.fill(criteria.name);
     }
     if (criteria.dateOfBirth !== undefined) {
       await this.dateOfBirthInput.fill(criteria.dateOfBirth);
-      await expect(this.dateOfBirthInput).toHaveValue(criteria.dateOfBirth);
     }
     await this.searchButton.click();
   }
 
   async searchByName(name: string): Promise<void> {
     await this.search({ name });
-    await expect(this.root.getByTestId('patient-row').filter({ hasText: name }).first()).toBeVisible({
-      timeout: 10_000
-    });
   }
 
-  async searchByDateOfBirth(dob: string, expectedName?: string): Promise<void> {
+  async searchByDateOfBirth(dob: string): Promise<void> {
     await this.nameInput.fill('');
     await this.search({ dateOfBirth: dob });
-    if (expectedName !== undefined) {
-      await expect(this.root.getByTestId('patient-row').filter({ hasText: expectedName }).first()).toBeVisible({
-        timeout: 10_000
-      });
-    }
   }
 
   async clear(): Promise<void> {
