@@ -163,9 +163,67 @@ The Healer uses the [Cursor CLI](https://cursor.com/docs/cli/github-actions) wit
 
 ### K6 load test
 
+Read-only load tests against the Supabase REST API. Results can be viewed in the terminal locally or published to **Grafana Cloud k6** (free tier: 500 virtual user hours/month).
+
+#### One-time Grafana Cloud setup
+
+1. Create a free account at [grafana.com](https://grafana.com/auth/sign-up/create-user) (no credit card).
+2. Open **Testing → Performance testing (k6)** in Grafana Cloud.
+3. Create a **project** for this repo.
+4. From k6 settings, add to this GitHub repo:
+   - **Stack API token** → secret `K6_CLOUD_TOKEN`
+   - **Project ID** → variable `K6_CLOUD_PROJECT_ID`
+   - **Stack ID** → variable `K6_CLOUD_STACK_ID`
+5. Reuse existing Supabase secrets (`SUPABASE_URL`, `SUPABASE_ANON_KEY`) and optionally `STAFF_EMAIL` / `STAFF_PASSWORD` for the authenticated scenario.
+
+#### Local run (console only)
+
+Install k6: [k6 install docs](https://grafana.com/docs/k6/latest/set-up/install-k6/)
+
 ```bash
-k6 run -e SUPABASE_URL=https://xxx.supabase.co -e SUPABASE_ANON_KEY=eyJ... tests/k6/clinic-load.js
+k6 run \
+  -e SUPABASE_URL=https://xxx.supabase.co \
+  -e SUPABASE_ANON_KEY=eyJ... \
+  tests/k6/clinic-load.js
 ```
+
+With `.env` loaded in your shell:
+
+```bash
+npm run test:k6
+```
+
+#### Local run + post to Grafana Cloud
+
+```bash
+k6 cloud login   # once: paste token and stack ID
+
+k6 cloud run tests/k6/clinic-load.js \
+  -e SUPABASE_URL=https://xxx.supabase.co \
+  -e SUPABASE_ANON_KEY=eyJ...
+```
+
+Or with cloud env vars set:
+
+```bash
+npm run test:k6:cloud
+```
+
+Open **Grafana Cloud → k6 → your project** to view charts, checks, and threshold pass/fail.
+
+#### CI run
+
+The **K6 Load Test** workflow runs weekly (Sunday 06:00 UTC), on pull requests to `main`, and manually via **Actions → K6 Load Test → Run workflow**. Results stream to Grafana Cloud; PRs get a comment with a link to the test run.
+
+#### What the script exercises
+
+| Scenario | Weight | Auth | Endpoint |
+|----------|--------|------|----------|
+| Clinic info | 50% | Public | `GET /rest/v1/clinic_info` |
+| Patients (no auth) | 30% | Public | `GET /rest/v1/patients` (expects `[]`) |
+| Staff list patients | 20% | Staff JWT | `GET /rest/v1/patients` (when staff creds set) |
+
+Load profile: 5 VUs for 30 seconds. Thresholds: `http_req_failed < 1%`, `p(95) < 800ms`.
 
 Supabase exposes a REST API at `{SUPABASE_URL}/rest/v1/`.
 
@@ -203,12 +261,15 @@ Use the `access_token` from the response as `Authorization: Bearer ...` for prot
 │   ├── deploy-pages.yml         # GitHub Pages deploy
 │   ├── playwright.yml           # CI test run
 │   ├── playwright-heal.yml        # Self-healing Healer (after failures)
-│   └── playwright-daily-allure.yml
+│   ├── playwright-daily-allure.yml
+│   └── k6.yml                     # K6 load test → Grafana Cloud
 ├── docs/SUPABASE_SETUP.md  # Step-by-step backend setup
 ├── tests/
 │   ├── ui/                 # Playwright UI tests
 │   ├── api/                # Playwright API tests
-│   ├── k6/                 # K6 performance script
+│   ├── k6/                 # K6 performance scripts
+│   │   ├── lib/            # Shared config and headers
+│   │   └── clinic-load.js
 │   └── helpers/            # Shared Supabase helpers
 ├── scripts/
 │   ├── generate-config.mjs # Build config.js from env

@@ -1,0 +1,36 @@
+name: K6 Load Test
+
+on:
+  schedule:
+    # 06:00 UTC every Sunday
+    - cron: '0 6 * * 0'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  k6:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup k6
+        uses: grafana/setup-k6-action@v1
+
+      - name: Run k6 and publish to Grafana Cloud
+        id: run_k6
+        uses: grafana/run-k6-action@v1
+        env:
+          K6_CLOUD_TOKEN: ${{ secrets.K6_CLOUD_TOKEN }}
+          K6_CLOUD_PROJECT_ID: ${{ vars.K6_CLOUD_PROJECT_ID }}
+          K6_CLOUD_STACK_ID: ${{ vars.K6_CLOUD_STACK_ID }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          STAFF_EMAIL: ${{ secrets.STAFF_EMAIL }}
+          STAFF_PASSWORD: ${{ secrets.STAFF_PASSWORD }}
+        with:
+          path: tests/k6/clinic-load.js
+          cloud-run-locally: true
+          cloud-comment-on-pr: true
