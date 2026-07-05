@@ -198,10 +198,12 @@ npm run test:k6
 ```bash
 k6 cloud login   # once: paste token and stack ID
 
-k6 cloud run tests/k6/clinic-load.js \
+k6 cloud run --include-system-env-vars tests/k6/clinic-load.js \
   -e SUPABASE_URL=https://xxx.supabase.co \
   -e SUPABASE_ANON_KEY=eyJ...
 ```
+
+`k6 cloud run` does not pass shell environment variables to `__ENV` by default (unlike `k6 run`). Use `-e` flags or `--include-system-env-vars` when your creds are already exported in the shell.
 
 Or with cloud env vars set:
 

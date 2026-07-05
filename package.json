@@ -11,7 +11,7 @@
     "test:ui": "playwright test tests/ui",
     "test:api": "playwright test tests/api",
     "test:k6": "k6 run tests/k6/clinic-load.js",
-    "test:k6:cloud": "k6 cloud run tests/k6/clinic-load.js",
+    "test:k6:cloud": "k6 cloud run --include-system-env-vars tests/k6/clinic-load.js",
     "test:headed": "playwright test --headed",
     "test:report": "playwright show-report",
     "test:allure": "playwright test",
