@@ -34,3 +34,5 @@ jobs:
           path: tests/k6/clinic-load.js
           cloud-run-locally: true
           cloud-comment-on-pr: true
+          # k6 cloud run does not pass host env to __ENV by default; step env above supplies Supabase creds.
+          flags: --include-system-env-vars
