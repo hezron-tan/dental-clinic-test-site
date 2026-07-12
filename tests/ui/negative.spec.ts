@@ -20,7 +20,7 @@ unauthenticatedTest.describe('Login — negative scenarios', () => {
     await loginPage.open();
   });
 
-  unauthenticatedTest('shows a specific error message for invalid credentials', async ({ loginPage, page }) => {
+  unauthenticatedTest('Verify that an invalid login shows a specific error message', async ({ loginPage, page }) => {
     await loginPage.login({ email: 'wrong@clinic.test', password: 'wrong-password' });
 
     await expect(loginPage.alert).toBeVisible();
@@ -29,7 +29,7 @@ unauthenticatedTest.describe('Login — negative scenarios', () => {
     await expect(page).toHaveURL(/login\.html/);
   });
 
-  unauthenticatedTest('blocks submit when email and password are empty', async ({ loginPage, page }) => {
+  unauthenticatedTest('Verify that login submit is blocked when email and password are empty', async ({ loginPage, page }) => {
     await loginPage.submitButton.click();
 
     await expect(loginPage.emailInput).toHaveJSProperty('validity.valid', false);
@@ -37,7 +37,7 @@ unauthenticatedTest.describe('Login — negative scenarios', () => {
     await expect(page).toHaveURL(/login\.html/);
   });
 
-  unauthenticatedTest('blocks submit when email format is invalid', async ({ loginPage, page }) => {
+  unauthenticatedTest('Verify that login submit is blocked when email format is invalid', async ({ loginPage, page }) => {
     await loginPage.emailInput.fill('not-an-email');
     await loginPage.passwordInput.fill('some-password');
     await loginPage.submitButton.click();
@@ -51,12 +51,12 @@ unauthenticatedTest.describe('Login — negative scenarios', () => {
 test.describe('Route protection — negative scenarios', () => {
   test.use({ storageState: emptyStorageState });
 
-  test('redirects unauthenticated users from admin dashboard to login', async ({ page }) => {
+  test('Verify that an unauthenticated user is redirected from the admin dashboard to login', async ({ page }) => {
     await page.goto('/admin/');
     await expect(page).toHaveURL(/login\.html/);
   });
 
-  test('redirects unauthenticated users from staff dashboard to login', async ({ page }) => {
+  test('Verify that an unauthenticated user is redirected from the staff dashboard to login', async ({ page }) => {
     await page.goto('/staff/');
     await expect(page).toHaveURL(/login\.html/);
   });
@@ -64,7 +64,7 @@ test.describe('Route protection — negative scenarios', () => {
   test.describe('authenticated staff', () => {
     test.use({ storageState: staffAuthState });
 
-    test('prevents staff users from staying on the admin dashboard', async ({ page }) => {
+    test('Verify that a staff user cannot stay on the admin dashboard', async ({ page }) => {
       test.skip(!hasStaffCredentials(), staffCredentialsMessage);
 
       await page.goto('/staff/');
@@ -86,7 +86,7 @@ test.describe('Admin dashboard — negative scenarios', () => {
     await adminPage.waitForReady();
   });
 
-  test('blocks saving clinic info when clinic name is cleared', async ({ page }) => {
+  test('Verify that as an admin, clinic info cannot be saved when clinic name is cleared', async ({ page }) => {
     const adminPage = new AdminDashboardPage(page);
 
     await adminPage.clinicNameInput.fill('');
@@ -96,7 +96,7 @@ test.describe('Admin dashboard — negative scenarios', () => {
     await expect(adminPage.alert).toBeHidden();
   });
 
-  test('blocks saving clinic info when email format is invalid', async ({ page }) => {
+  test('Verify that as an admin, clinic info cannot be saved when email format is invalid', async ({ page }) => {
     const adminPage = new AdminDashboardPage(page);
 
     await adminPage.clinicEmailInput.fill('not-an-email');
@@ -106,7 +106,7 @@ test.describe('Admin dashboard — negative scenarios', () => {
     await expect(adminPage.alert).toBeHidden();
   });
 
-  test('blocks saving a patient when required name fields are empty', async ({ page }) => {
+  test('Verify that as an admin, a patient cannot be saved when required name fields are empty', async ({ page }) => {
     const adminPage = new AdminDashboardPage(page);
 
     await adminPage.openAddPatientModal();
@@ -117,7 +117,7 @@ test.describe('Admin dashboard — negative scenarios', () => {
     await expect(adminPage.patientFormOverlay).toBeVisible();
   });
 
-  test('blocks saving a patient when email format is invalid', async ({ page }) => {
+  test('Verify that as an admin, a patient cannot be saved when email format is invalid', async ({ page }) => {
     const adminPage = new AdminDashboardPage(page);
 
     await adminPage.openAddPatientModal();
@@ -130,7 +130,7 @@ test.describe('Admin dashboard — negative scenarios', () => {
     await expect(adminPage.alert).toBeHidden();
   });
 
-  test('shows an empty-state row when search finds no patients', async ({ page }) => {
+  test('Verify that as an admin, an empty-state row is shown when search finds no patients', async ({ page }) => {
     const adminPage = new AdminDashboardPage(page);
 
     await adminPage.showPatientsTab();
@@ -140,7 +140,7 @@ test.describe('Admin dashboard — negative scenarios', () => {
     await expect(adminPage.alert).toBeHidden();
   });
 
-  test('does not delete a patient when the confirmation dialog is dismissed', async ({
+  test('Verify that as an admin, a patient is not deleted when the confirmation dialog is dismissed', async ({
     page,
     patientTracker
   }) => {
@@ -171,7 +171,7 @@ test.describe('Staff dashboard — negative scenarios', () => {
     await staffPage.waitForReady();
   });
 
-  test('shows a validation error for impossible date of birth values', async ({ page }) => {
+  test('Verify that as a staff user, an impossible date of birth shows a validation error', async ({ page }) => {
     const staffPage = new StaffDashboardPage(page);
 
     await staffPage.patientSearch.search({ dateOfBirth: '31/02/2020' });
@@ -181,7 +181,7 @@ test.describe('Staff dashboard — negative scenarios', () => {
     await expect(staffPage.alert).toHaveText('Enter date of birth as dd/mm/yyyy.');
   });
 
-  test('shows a validation error for non-date search input', async ({ page }) => {
+  test('Verify that as a staff user, non-date search input shows a validation error', async ({ page }) => {
     const staffPage = new StaffDashboardPage(page);
 
     await staffPage.patientSearch.search({ dateOfBirth: 'not-a-date' });
@@ -191,7 +191,7 @@ test.describe('Staff dashboard — negative scenarios', () => {
     await expect(staffPage.alert).toHaveText('Enter date of birth as dd/mm/yyyy.');
   });
 
-  test('shows a validation error when date of birth uses ISO format instead of dd/mm/yyyy', async ({
+  test('Verify that as a staff user, ISO date of birth format shows a validation error', async ({
     page
   }) => {
     const staffPage = new StaffDashboardPage(page);
@@ -203,7 +203,7 @@ test.describe('Staff dashboard — negative scenarios', () => {
     await expect(staffPage.alert).toHaveText('Enter date of birth as dd/mm/yyyy.');
   });
 
-  test('blocks adding a patient when required name fields are empty', async ({ page }) => {
+  test('Verify that as a staff user, adding a patient is blocked when required name fields are empty', async ({ page }) => {
     const staffPage = new StaffDashboardPage(page);
 
     await staffPage.openAddPatientModal();
@@ -214,7 +214,7 @@ test.describe('Staff dashboard — negative scenarios', () => {
     await expect(staffPage.addPatientOverlay).toBeVisible();
   });
 
-  test('blocks adding a patient when email format is invalid', async ({ page }) => {
+  test('Verify that as a staff user, adding a patient is blocked when email format is invalid', async ({ page }) => {
     const staffPage = new StaffDashboardPage(page);
 
     await staffPage.openAddPatientModal();
@@ -227,7 +227,7 @@ test.describe('Staff dashboard — negative scenarios', () => {
     await expect(staffPage.alert).toBeHidden();
   });
 
-  test('shows an empty-state row when search finds no patients', async ({ page }) => {
+  test('Verify that as a staff user, an empty-state row is shown when search finds no patients', async ({ page }) => {
     const staffPage = new StaffDashboardPage(page);
 
     await staffPage.patientSearch.search({ name: 'zzzznonexistent-patient-name' });
@@ -236,7 +236,7 @@ test.describe('Staff dashboard — negative scenarios', () => {
     await expect(staffPage.alert).toBeHidden();
   });
 
-  test('keeps view overlay open and shows error toast when patient save fails', async ({
+  test('Verify that as a staff user, the view overlay stays open and an error toast is shown when patient save fails', async ({
     page,
     patientTracker
   }) => {
@@ -266,7 +266,7 @@ test.describe('Staff dashboard — negative scenarios', () => {
     await expect(staffPage.viewPatientOverlay).toBeVisible();
   });
 
-  test('keeps add visit overlay open and shows error toast when visit save fails', async ({
+  test('Verify that as a staff user, the add visit overlay stays open and an error toast is shown when visit save fails', async ({
     page,
     patientTracker
   }) => {
@@ -297,7 +297,7 @@ test.describe('Staff dashboard — negative scenarios', () => {
     await expect(staffPage.addVisitOverlay).toBeVisible();
   });
 
-  test('blocks saving patient details when required name fields are cleared in edit mode', async ({
+  test('Verify that as a staff user, patient details cannot be saved when required name fields are cleared in edit mode', async ({
     page,
     patientTracker
   }) => {

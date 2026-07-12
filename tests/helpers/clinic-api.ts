@@ -11,6 +11,13 @@ interface ClinicInfoRow {
   hours: string;
 }
 
+/**
+ * Loads the clinic profile row (`id=1`) from Supabase REST as form-shaped data.
+ * Used to snapshot clinic info before admin UI tests mutate it.
+ * @param request - Playwright API request context.
+ * @returns Clinic form fields mapped from the `clinic_info` row.
+ * @throws When the REST request fails.
+ */
 export async function fetchClinicInfo(request: APIRequestContext): Promise<ClinicFormData> {
   const res = await request.get(
     `${supabaseUrl}/rest/v1/clinic_info?id=eq.1&select=name,tagline,address,phone,email,hours`,
@@ -32,6 +39,13 @@ export async function fetchClinicInfo(request: APIRequestContext): Promise<Clini
   };
 }
 
+/**
+ * Writes clinic profile fields back to the `clinic_info` row (`id=1`) via admin JWT.
+ * Used after admin UI tests to restore a previously captured snapshot.
+ * @param request - Playwright API request context.
+ * @param data - Clinic form fields to persist (empty `tagline` is stored as `null`).
+ * @throws When the REST request fails.
+ */
 export async function restoreClinicInfo(
   request: APIRequestContext,
   data: ClinicFormData

@@ -1,13 +1,22 @@
 import { type Locator, type Page } from '@playwright/test';
 import type { PatientFormData } from '../../models';
 
+/**
+ * Shared add/edit patient form fields.
+ * Optionally scoped to an overlay/root locator (e.g. staff view overlay).
+ */
 export class PatientFormComponent {
   private readonly root: Page | Locator;
 
+  /**
+   * @param page - Playwright page (used when `scope` is omitted).
+   * @param scope - Optional root locator that contains the form fields.
+   */
   constructor(page: Page, scope?: Locator) {
     this.root = scope ?? page;
   }
 
+  /** Patient form container. */
   get form(): Locator {
     return this.root.getByTestId('patient-form');
   }
@@ -36,10 +45,15 @@ export class PatientFormComponent {
     return this.root.getByTestId('patient-address');
   }
 
+  /** Saves the patient form. */
   get saveButton(): Locator {
     return this.root.getByTestId('save-patient');
   }
 
+  /**
+   * Fills required name fields and any optional fields present on `data`.
+   * @param data - Patient form values to enter.
+   */
   async fill(data: PatientFormData): Promise<void> {
     await this.firstNameInput.fill(data.firstName);
     await this.lastNameInput.fill(data.lastName);
@@ -58,10 +72,15 @@ export class PatientFormComponent {
     }
   }
 
+  /** Clicks the save button. */
   async submit(): Promise<void> {
     await this.saveButton.click();
   }
 
+  /**
+   * Fills the form and submits in one step.
+   * @param data - Patient form values to enter and save.
+   */
   async fillAndSubmit(data: PatientFormData): Promise<void> {
     await this.fill(data);
     await this.submit();
