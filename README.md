@@ -215,7 +215,7 @@ Open **Grafana Cloud → k6 → your project** to view charts, checks, and thres
 
 #### CI run
 
-The **K6 Load Test** workflow runs weekly (Sunday 06:00 UTC), on pull requests to `main`, and manually via **Actions → K6 Load Test → Run workflow**. Results stream to Grafana Cloud; PRs get a comment with a link to the test run.
+The **K6 Load Test** workflow runs weekly (Sunday 06:00 UTC) and manually via **Actions → K6 Load Test → Run workflow**. Results stream to Grafana Cloud.
 
 #### What the script exercises
 
