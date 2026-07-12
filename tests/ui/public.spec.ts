@@ -1,7 +1,7 @@
 import { expect, test } from '../fixtures';
 
 test.describe('Public clinic site', () => {
-  test('displays clinic name and contact info', async ({ publicPage }) => {
+  test('Verify that the public site displays clinic name and contact info', async ({ publicPage }) => {
     await publicPage.open();
 
     await expect(publicPage.clinicName).toBeVisible();
@@ -12,7 +12,7 @@ test.describe('Public clinic site', () => {
     await expect(publicPage.clinicHours).toBeVisible();
   });
 
-  test('navigates to staff login', async ({ publicPage, loginPage, page }) => {
+  test('Verify that the public site navigates to staff login', async ({ publicPage, loginPage, page }) => {
     await publicPage.open();
     await publicPage.goToLogin();
 
@@ -20,7 +20,7 @@ test.describe('Public clinic site', () => {
     await expect(loginPage.form).toBeVisible();
   });
 
-  test('navigates to staff portal from welcome section', async ({ publicPage, loginPage, page }) => {
+  test('Verify that the welcome section navigates to the staff portal', async ({ publicPage, loginPage, page }) => {
     await publicPage.open();
     await publicPage.navToStaffPortal();
 
@@ -28,7 +28,7 @@ test.describe('Public clinic site', () => {
     await expect(loginPage.form).toBeVisible();
   });
 
-  test('navigates to contact section', async ({ publicPage }) => {
+  test('Verify that the contact nav link scrolls to the contact section', async ({ publicPage }) => {
     await publicPage.open();
     await publicPage.scrollToContact();
 

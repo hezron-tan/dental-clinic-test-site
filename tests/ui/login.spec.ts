@@ -10,7 +10,7 @@ test.describe('Login', () => {
     await loginPage.open();
   });
 
-  test('admin redirects to admin dashboard', async ({ loginPage, page }) => {
+  test('Verify that as an admin, I am redirected to the admin dashboard after login', async ({ loginPage, page }) => {
     test.skip(!hasAdminCredentials(), credentialsMessage);
 
     const adminPage = new AdminDashboardPage(page);
@@ -21,7 +21,7 @@ test.describe('Login', () => {
     await expect(adminPage.clinicForm).toBeVisible();
   });
 
-  test('staff redirects to staff dashboard', async ({ loginPage, page }) => {
+  test('Verify that as a staff user, I am redirected to the staff dashboard after login', async ({ loginPage, page }) => {
     test.skip(!hasStaffCredentials(), credentialsMessage);
 
     const staffPage = new StaffDashboardPage(page);
@@ -31,7 +31,7 @@ test.describe('Login', () => {
     await expect(staffPage.patientTable.table).toBeVisible();
   });
 
-  test('logout returns to login', async ({ loginPage, page }) => {
+  test('Verify that after logout, I am returned to the login page', async ({ loginPage, page }) => {
     test.skip(!hasStaffCredentials(), credentialsMessage);
 
     const staffPage = new StaffDashboardPage(page);

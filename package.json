@@ -1,6 +1,7 @@
 {
   "name": "dental-clinic-test-site",
   "private": true,
+  "type": "module",
   "description": "Practice site for Playwright UI/API and K6 performance testing",
   "scripts": {
     "config": "node scripts/generate-config.mjs",
@@ -23,11 +24,13 @@
     "agents:init:vscode": "playwright init-agents --loop=vscode"
   },
   "devDependencies": {
-    "@faker-js/faker": "^10.5.0",
+    "@faker-js/faker": "^9.9.0",
     "@playwright/mcp": "^0.0.68",
     "@playwright/test": "^1.56.0",
+    "@types/node": "^26.1.1",
     "allure-commandline": "^2.43.0",
     "allure-playwright": "^3.10.2",
-    "dotenv": "^16.5.0"
+    "dotenv": "^16.5.0",
+    "typescript": "^7.0.2"
   }
 }
