@@ -1,3 +1,6 @@
+/**
+ * Page object barrel: pages and shared UI components used by Playwright specs.
+ */
 export { BasePage } from './base.page';
 export { PublicPage } from './public.page';
 export { LoginPage } from './login.page';

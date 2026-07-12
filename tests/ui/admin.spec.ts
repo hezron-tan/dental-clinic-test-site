@@ -17,14 +17,14 @@ adminTest.describe('Admin dashboard', () => {
     await adminPage.waitForReady();
   });
 
-  adminTest('shows clinic form and patient table', async ({ adminPage }) => {
+  adminTest('Verify that as an admin, I can see the clinic form and patient table', async ({ adminPage }) => {
     await expect(adminPage.clinicForm).toBeVisible();
     await adminPage.showPatientsTab();
     await expect(adminPage.patientTable.table).toBeVisible();
     await expect(adminPage.patientPagination.bar).toBeVisible();
   });
 
-  adminTest('updates clinic tagline', async ({ adminPage, page }) => {
+  adminTest('Verify that as an admin, I can update the clinic tagline on the public site', async ({ adminPage, page }) => {
     const publicPage = new PublicPage(page);
     const update = buildClinicUpdate();
 
@@ -35,7 +35,7 @@ adminTest.describe('Admin dashboard', () => {
     await expect(publicPage.clinicTagline).toHaveText(update.tagline!);
   });
 
-  adminTest('adds a new patient', async ({ adminPage }) => {
+  adminTest('Verify that as an admin, I can add a new patient', async ({ adminPage }) => {
     const patient = buildPatient();
 
     await adminPage.addPatient(patient);
@@ -47,7 +47,7 @@ adminTest.describe('Admin dashboard', () => {
     });
   });
 
-  adminTest('switches between clinic and patients tabs', async ({ adminPage }) => {
+  adminTest('Verify that as an admin, I can switch between clinic and patients tabs', async ({ adminPage }) => {
     await expect(adminPage.clinicPanel).toBeVisible();
     await expect(adminPage.clinicForm).toBeVisible();
 
@@ -59,7 +59,7 @@ adminTest.describe('Admin dashboard', () => {
     await expect(adminPage.clinicPanel).toBeVisible();
   });
 
-  adminTest('edits an existing patient', async ({ adminPage }) => {
+  adminTest('Verify that as an admin, I can edit an existing patient', async ({ adminPage }) => {
     const patient = buildPatient();
     const updatedEmail = testEmail('updated');
 
@@ -76,7 +76,7 @@ adminTest.describe('Admin dashboard', () => {
     await expect(adminPage.patientTable.rowByName(patientRowMatch(patient))).toContainText(updatedEmail);
   });
 
-  adminTest('deletes a patient', async ({ adminPage, patientTracker }) => {
+  adminTest('Verify that as an admin, I can delete a patient', async ({ adminPage, patientTracker }) => {
     const patient = buildPatient();
 
     await adminPage.addPatient(patient);
@@ -90,7 +90,7 @@ adminTest.describe('Admin dashboard', () => {
     await expect(adminPage.patientTable.rowByName(patientRowMatch(patient))).toHaveCount(0);
   });
 
-  adminTest('searches patients by name', async ({ adminPage }) => {
+  adminTest('Verify that as an admin, I can search patients by name', async ({ adminPage }) => {
     const targetPatient = buildPatient();
     const otherPatient = buildPatient();
 
@@ -104,7 +104,7 @@ adminTest.describe('Admin dashboard', () => {
     await expect(adminPage.patientTable.rowByName(patientRowMatch(otherPatient))).toHaveCount(0);
   });
 
-  adminTest('paginates the patient list', async ({ adminPage }) => {
+  adminTest('Verify that as an admin, I can paginate the patient list', async ({ adminPage }) => {
     await adminPage.showPatientsTab();
     adminTest.skip(
       !(await adminPage.patientPagination.hasMultiplePages()),
@@ -120,7 +120,7 @@ adminTest.describe('Admin dashboard', () => {
     await expect(adminPage.patientPagination.pageInfo).toContainText(/Page 1 of/i);
   });
 
-  adminTest('updates clinic contact info on public site', async ({ adminPage, page }) => {
+  adminTest('Verify that as an admin, I can update clinic contact info on the public site', async ({ adminPage, page }) => {
     const publicPage = new PublicPage(page);
     const update = buildClinicUpdate();
 
@@ -134,7 +134,7 @@ adminTest.describe('Admin dashboard', () => {
     await expect(publicPage.clinicHours).toHaveText(update.hours!);
   });
 
-  adminTest('logs out to login page', async ({ adminPage, page }) => {
+  adminTest('Verify that as an admin, I can log out to the login page', async ({ adminPage, page }) => {
     await adminPage.logout();
 
     await expect(page).toHaveURL(/login\.html/);
