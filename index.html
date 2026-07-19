@@ -11,32 +11,88 @@
 		<link rel="stylesheet" href="assets/css/main.css" />
 		<link rel="stylesheet" href="css/app.css" />
 	</head>
-	<body class="is-preload">
+	<body class="is-preload home">
 		<div id="page-wrapper">
 
+			<!-- Template header retained (hidden) so Arcana main.js can build its mobile bar without errors -->
 			<div id="header">
 				<h1><a href="index.html" id="logo">Bright Smile <em>Dental Clinic</em></a></h1>
-				<nav id="nav">
-					<ul>
-						<li class="current"><a href="index.html">Home</a></li>
-						<li><a href="#contact">Contact</a></li>
-						<li><a href="login.html" data-testid="nav-login">Staff Login</a></li>
-					</ul>
-				</nav>
+				<nav id="nav"><ul></ul></nav>
 			</div>
 
 			<section id="banner">
-				<header>
-					<h2>
-						<span id="clinic-name" data-testid="clinic-name">Bright Smile Dental Clinic</span>
-						<em id="clinic-tagline" data-testid="clinic-tagline">Your trusted neighborhood dental care</em>
-					</h2>
-					<a href="#contact" class="button">Contact Us</a>
-				</header>
+				<div class="card-nav-container" id="card-nav">
+					<nav class="card-nav" aria-label="Primary navigation">
+						<div class="card-nav-top">
+							<div class="hamburger-menu" role="button" aria-label="Open menu" aria-expanded="false" tabindex="0">
+								<div class="hamburger-line"></div>
+								<div class="hamburger-line"></div>
+							</div>
+							<div class="logo-container">
+								<a class="cardnav-logo" href="index.html">Bright Smile <em>Dental</em></a>
+							</div>
+							<a class="card-nav-cta-button" href="#contact">Get in Touch</a>
+						</div>
+						<div class="card-nav-content" aria-hidden="true">
+							<div class="nav-card" style="background:#050b12;color:#ffffff;">
+								<span class="nav-card-label">Our Practice</span>
+								<div class="nav-card-links">
+									<a class="nav-card-link" href="index.html">Home</a>
+									<a class="nav-card-link" href="#services">Services</a>
+									<a class="nav-card-link" href="#hours">Office Hours</a>
+								</div>
+							</div>
+							<div class="nav-card" style="background:#37c0fb;color:#042430;">
+								<span class="nav-card-label">Reach Us</span>
+								<div class="nav-card-links">
+									<a class="nav-card-link" href="#contact">Contact Us</a>
+									<a class="nav-card-link" href="tel:+15035550142">Call Us</a>
+									<a class="nav-card-link" href="mailto:hello@brightsmile-dental.test">Email Us</a>
+								</div>
+							</div>
+							<div class="nav-card" style="background:#1a86c9;color:#ffffff;">
+								<span class="nav-card-label">Portal</span>
+								<div class="nav-card-links">
+									<a class="nav-card-link" href="login.html" data-testid="nav-login">Staff Login</a>
+								</div>
+							</div>
+						</div>
+					</nav>
+				</div>
+				<div class="banner-hero">
+					<header>
+						<h2>
+							<span id="clinic-name" data-testid="clinic-name">Bright Smile Dental Clinic</span>
+							<em id="clinic-tagline" data-testid="clinic-tagline">Your trusted neighborhood dental care</em>
+						</h2>
+						<div class="banner-actions">
+							<a href="#services" class="button alt">Services</a>
+							<a href="#contact" class="button">Contact Us</a>
+						</div>
+					</header>
+				</div>
 			</section>
 
-			<section class="wrapper style1">
+			<section id="welcome" class="wrapper style1">
 				<div class="container">
+					<header class="major">
+						<h2>Welcome to our practice</h2>
+						<p>We provide comprehensive dental care for the whole family — from routine cleanings to restorative treatments. Our friendly team is here to keep your smile healthy.</p>
+					</header>
+					<div class="welcome-gallery">
+						<img src="images/smile-braces.png" alt="Smiling patient with braces" />
+						<img src="images/dental-tools.png" alt="Sterilized dental instruments on a tray" />
+						<img src="images/clinic-interior.png" alt="Bright, modern dental clinic waiting area" />
+					</div>
+					<p class="welcome-gallery-caption">The images shown are AI-generated using Google Gemini and are provided for illustrative purposes only on this non-profit practice site.</p>
+				</div>
+			</section>
+
+			<section id="services" class="wrapper style2">
+				<div class="container">
+					<header class="major">
+						<h2>What We Offer</h2>
+					</header>
 					<div class="row gtr-200">
 						<section class="col-4 col-12-narrower">
 							<div class="box highlight">
@@ -63,25 +119,19 @@
 				</div>
 			</section>
 
-			<section class="wrapper style2">
+			<section id="hours" class="wrapper style1">
 				<div class="container">
-					<header class="major">
-						<h2>Office Hours</h2>
-						<p id="clinic-hours" data-testid="clinic-hours">Mon–Fri 8:00 AM – 6:00 PM | Sat 9:00 AM – 1:00 PM</p>
-					</header>
-				</div>
-			</section>
-
-			<section class="wrapper style1">
-				<div class="container">
-					<header class="major">
-						<h2>Welcome to our practice</h2>
-						<p>We provide comprehensive dental care for the whole family — from routine cleanings to restorative treatments. Our friendly team is here to keep your smile healthy.</p>
-					</header>
-					<ul class="actions special">
-						<li><a href="#contact" class="button primary">Contact Us</a></li>
-						<li><a href="login.html" class="button">Staff Portal</a></li>
-					</ul>
+					<div class="row gtr-200 aln-middle">
+						<section class="col-6 col-12-narrower">
+							<header class="major">
+								<h2>Office Hours</h2>
+								<p id="clinic-hours" data-testid="clinic-hours">Mon–Fri 8:00 AM – 6:00 PM | Sat 9:00 AM – 1:00 PM</p>
+							</header>
+						</section>
+						<section class="col-6 col-12-narrower">
+							<span class="image fit"><img src="images/clinic-exterior.png" alt="Dental Care Clinic exterior" /></span>
+						</section>
+					</div>
 				</div>
 			</section>
 
@@ -114,6 +164,7 @@
 					<ul class="menu">
 						<li>&copy; <span id="clinic-name-footer">Bright Smile Dental Clinic</span></li>
 						<li>Design: <a href="https://html5up.net/arcana">HTML5 UP</a></li>
+						<li>Animations: <a href="https://reactbits.dev">React Bits</a></li>
 					</ul>
 				</div>
 			</div>
@@ -126,6 +177,8 @@
 		<script src="assets/js/breakpoints.min.js"></script>
 		<script src="assets/js/util.js"></script>
 		<script src="assets/js/main.js"></script>
+		<script src="js/card-nav.js"></script>
+		<script src="js/floating-lines.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 		<script src="js/config.js"></script>
 		<script src="js/supabase-client.js"></script>
