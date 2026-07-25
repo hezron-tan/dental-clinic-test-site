@@ -47,6 +47,14 @@ staffTest.describe('Staff dashboard', () => {
     await staffPage.waitForReady();
   });
 
+  staffTest('Verify that as a staff, I can see the sidebar drawer and patients section title', async ({ staffPage }) => {
+    await expect(staffPage.drawer).toBeVisible();
+    await expect(staffPage.logoutButton).toBeVisible();
+    await expect(staffPage.pageSectionTitle).toHaveText('Patients');
+    await expect(staffPage.addPatientButton).toHaveText('+ Patient');
+    await expect(staffPage.patientTable.table).toBeVisible();
+  });
+
   staffTest('Verify that as a staff, I can list patients in a table and see details', async ({ staffPage }) => {
     const patient = await addTestPatient(staffPage, {}, { leaveViewOpen: true });
 
@@ -55,8 +63,9 @@ staffTest.describe('Staff dashboard', () => {
     await expect(staffPage.viewPatientOverlay).toBeVisible();
     await expect(staffPage.patientReadonlyView).toBeVisible();
     await expect(staffPage.patientEditView).toBeHidden();
-    await expect(staffPage.patientReadonlyView).toContainText(patient.firstName);
-    await expect(staffPage.patientReadonlyView).toContainText(patient.lastName);
+    await expect(staffPage.patientForm.firstNameInput).toBeDisabled();
+    await expect(staffPage.patientForm.firstNameInput).toHaveValue(patient.firstName);
+    await expect(staffPage.patientForm.lastNameInput).toHaveValue(patient.lastName);
     await expect(staffPage.historyForm.historyList).toBeVisible();
     await expect(staffPage.deletePatientButtons).toHaveCount(0);
   });
@@ -73,8 +82,9 @@ staffTest.describe('Staff dashboard', () => {
 
     await expect(staffPage.patientReadonlyView).toBeVisible();
     await expect(staffPage.patientEditView).toBeHidden();
-    await expect(staffPage.editPatientButton).toBeVisible();
-    await expect(staffPage.viewPhone).toHaveText(patient.phone!);
+    await expect(staffPage.editPatientButton).toHaveText('Edit');
+    await expect(staffPage.patientForm.firstNameInput).toBeDisabled();
+    await expect(staffPage.viewPhone).toHaveValue(patient.phone!);
     await expect(staffPage.historyForm.historyList).toBeVisible();
   });
 
@@ -83,17 +93,12 @@ staffTest.describe('Staff dashboard', () => {
 
     await staffPage.enterEditMode();
 
+    await expect(staffPage.viewPatientOverlay).toBeVisible();
     await expect(staffPage.patientEditView).toBeVisible();
-    await expect(staffPage.patientReadonlyView).toBeHidden();
-    await expect(staffPage.editPatientButton).toHaveAttribute('hidden', '');
+    await expect(staffPage.editPatientButton).toHaveText('Cancel');
+    await expect(staffPage.patientForm.firstNameInput).toBeEnabled();
     await expect(staffPage.patientForm.saveButton).toBeVisible();
-  });
-
-  staffTest('Verify that as a staff, I can close the view overlay with Cancel', async ({ staffPage }) => {
-    await addTestPatient(staffPage, {}, { leaveViewOpen: true });
-
-    await staffPage.closeViewPatientViaCancel();
-    await expect(staffPage.viewPatientOverlay).toBeHidden();
+    await expect(staffPage.page.getByRole('heading', { name: 'Edit Patient' })).toBeVisible();
   });
 
   staffTest('Verify that as a staff, I can close the view overlay with the close button', async ({ staffPage }) => {
@@ -115,7 +120,7 @@ staffTest.describe('Staff dashboard', () => {
     await expect(staffPage.viewPatientOverlay).toBeHidden();
 
     await staffPage.openViewPatient(patientRowMatch(patient));
-    await expect(staffPage.viewPhone).toHaveText(uniquePhone);
+    await expect(staffPage.viewPhone).toHaveValue(uniquePhone);
   });
 
   staffTest('Verify that as a staff, I can dismiss success toast notifications', async ({ staffPage }) => {
@@ -229,12 +234,24 @@ staffTest.describe('Staff dashboard', () => {
     );
 
     await expect(staffPage.patientPagination.pageInfo).toContainText(/Page 1 of/i);
+    await expect(staffPage.patientPagination.firstButton).toBeDisabled();
+    await expect(staffPage.patientPagination.prevButton).toBeDisabled();
+    await expect(staffPage.patientPagination.nextButton).toBeEnabled();
+    await expect(staffPage.patientPagination.lastButton).toBeEnabled();
 
     await staffPage.patientPagination.goToNextPage();
     await expect(staffPage.patientPagination.pageInfo).toContainText(/Page 2 of/i);
 
-    await staffPage.patientPagination.goToPreviousPage();
+    await staffPage.patientPagination.goToLastPage();
+    const totalPages = await staffPage.patientPagination.totalPages();
+    await expect(staffPage.patientPagination.pageInfo).toContainText(new RegExp(`Page ${totalPages} of`, 'i'));
+    await expect(staffPage.patientPagination.nextButton).toBeDisabled();
+    await expect(staffPage.patientPagination.lastButton).toBeDisabled();
+
+    await staffPage.patientPagination.goToFirstPage();
     await expect(staffPage.patientPagination.pageInfo).toContainText(/Page 1 of/i);
+    await expect(staffPage.patientPagination.firstButton).toBeDisabled();
+    await expect(staffPage.patientPagination.prevButton).toBeDisabled();
   });
 
   staffTest('Verify that as a staff, I can close the add patient modal without saving', async ({ staffPage }) => {

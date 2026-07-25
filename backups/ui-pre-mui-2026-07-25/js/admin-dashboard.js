@@ -107,10 +107,8 @@
 
   function renderPagination(total, totalPages, start, shown) {
     const pageInfo = document.getElementById('page-info');
-    const firstBtn = document.getElementById('first-page');
     const prevBtn = document.getElementById('prev-page');
     const nextBtn = document.getElementById('next-page');
-    const lastBtn = document.getElementById('last-page');
 
     if (!total) {
       pageInfo.textContent = 'No patients to display';
@@ -122,12 +120,8 @@
         ' · Page ' + currentPage + ' of ' + totalPages;
     }
 
-    const atStart = currentPage <= 1;
-    const atEnd = currentPage >= totalPages;
-    if (firstBtn) firstBtn.disabled = atStart;
-    prevBtn.disabled = atStart;
-    nextBtn.disabled = atEnd;
-    if (lastBtn) lastBtn.disabled = atEnd;
+    prevBtn.disabled = currentPage <= 1;
+    nextBtn.disabled = currentPage >= totalPages;
   }
 
   function renderPatientTable() {
@@ -194,15 +188,6 @@
     if (firstField) firstField.focus();
   }
 
-  const TAB_TITLES = {
-    clinic: 'Clinic Information',
-    patients: 'Patients'
-  };
-
-  /**
-   * Switches the active admin section (sidebar nav + content panel).
-   * @param {string} tabId - Section id (`clinic` | `patients`).
-   */
   function switchTab(tabId) {
     document.querySelectorAll('.tab-btn').forEach(function (btn) {
       const isActive = btn.dataset.tab === tabId;
@@ -215,37 +200,6 @@
       panel.classList.toggle('active', isActive);
       panel.hidden = !isActive;
     });
-
-    const titleEl = document.getElementById('page-section-title');
-    if (titleEl && TAB_TITLES[tabId]) {
-      titleEl.textContent = TAB_TITLES[tabId];
-    }
-
-    closeMobileDrawer();
-  }
-
-  /** Opens the temporary drawer on small screens. */
-  function openMobileDrawer() {
-    const drawer = document.querySelector('.dashboard-drawer');
-    const backdrop = document.getElementById('drawer-backdrop');
-    const toggle = document.getElementById('drawer-toggle');
-    if (!drawer) return;
-    drawer.classList.add('is-open');
-    if (backdrop) backdrop.hidden = false;
-    if (toggle) toggle.setAttribute('aria-expanded', 'true');
-    document.body.classList.add('drawer-open');
-  }
-
-  /** Closes the temporary drawer on small screens. */
-  function closeMobileDrawer() {
-    const drawer = document.querySelector('.dashboard-drawer');
-    const backdrop = document.getElementById('drawer-backdrop');
-    const toggle = document.getElementById('drawer-toggle');
-    if (!drawer) return;
-    drawer.classList.remove('is-open');
-    if (backdrop) backdrop.hidden = true;
-    if (toggle) toggle.setAttribute('aria-expanded', 'false');
-    document.body.classList.remove('drawer-open');
   }
 
   async function savePatientForm(e) {
@@ -298,23 +252,6 @@
       window.location.href = App.siteUrl('login.html');
     });
 
-    const drawerToggle = document.getElementById('drawer-toggle');
-    if (drawerToggle) {
-      drawerToggle.addEventListener('click', function () {
-        const drawer = document.querySelector('.dashboard-drawer');
-        if (drawer && drawer.classList.contains('is-open')) {
-          closeMobileDrawer();
-        } else {
-          openMobileDrawer();
-        }
-      });
-    }
-
-    const drawerBackdrop = document.getElementById('drawer-backdrop');
-    if (drawerBackdrop) {
-      drawerBackdrop.addEventListener('click', closeMobileDrawer);
-    }
-
     document.getElementById('clinic-form').addEventListener('submit', saveClinicForm);
     document.getElementById('patient-form').addEventListener('submit', savePatientForm);
 
@@ -342,13 +279,6 @@
       }
     });
 
-    document.getElementById('first-page').addEventListener('click', function () {
-      if (currentPage > 1) {
-        currentPage = 1;
-        renderPatientTable();
-      }
-    });
-
     document.getElementById('prev-page').addEventListener('click', function () {
       if (currentPage > 1) {
         currentPage -= 1;
@@ -360,14 +290,6 @@
       const totalPages = Math.max(1, Math.ceil(filteredPatients.length / PAGE_SIZE));
       if (currentPage < totalPages) {
         currentPage += 1;
-        renderPatientTable();
-      }
-    });
-
-    document.getElementById('last-page').addEventListener('click', function () {
-      const totalPages = Math.max(1, Math.ceil(filteredPatients.length / PAGE_SIZE));
-      if (currentPage < totalPages) {
-        currentPage = totalPages;
         renderPatientTable();
       }
     });

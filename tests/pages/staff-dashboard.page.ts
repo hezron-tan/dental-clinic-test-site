@@ -20,7 +20,9 @@ export class StaffDashboardPage extends BasePage {
   readonly patientPagination: PatientPaginationComponent;
   /** Patient search form. */
   readonly patientSearch: PatientSearchComponent;
-  /** Edit-patient form scoped to the view overlay. */
+  /** Add-patient form (dedicated add overlay). */
+  readonly addPatientFormFields: PatientFormComponent;
+  /** View/edit patient form inside the view overlay. */
   readonly patientForm: PatientFormComponent;
   /** Visit history form (add-visit overlay) and list (view overlay). */
   readonly historyForm: HistoryFormComponent;
@@ -33,6 +35,10 @@ export class StaffDashboardPage extends BasePage {
     this.patientTable = new PatientTableComponent(page);
     this.patientPagination = new PatientPaginationComponent(page);
     this.patientSearch = new PatientSearchComponent(page);
+    this.addPatientFormFields = new PatientFormComponent(
+      page,
+      page.getByTestId('patient-form-overlay')
+    );
     this.patientForm = new PatientFormComponent(page, page.getByTestId('view-patient-overlay'));
     this.historyForm = new HistoryFormComponent(
       page,
@@ -41,7 +47,7 @@ export class StaffDashboardPage extends BasePage {
     );
   }
 
-  /** Logout control in the staff chrome. */
+  /** Logout control in the staff sidebar drawer. */
   get logoutButton(): Locator {
     return this.page.getByTestId('logout-btn');
   }
@@ -49,6 +55,16 @@ export class StaffDashboardPage extends BasePage {
   /** Greeting that shows the signed-in staff user. */
   get userGreeting(): Locator {
     return this.page.getByTestId('user-greeting');
+  }
+
+  /** App bar title for the active section. */
+  get pageSectionTitle(): Locator {
+    return this.page.locator('#page-section-title');
+  }
+
+  /** Left navigation drawer. */
+  get drawer(): Locator {
+    return this.page.locator('#staff-drawer');
   }
 
   /** Staff status alert (legacy; prefer toasts for success/error). */
@@ -76,29 +92,34 @@ export class StaffDashboardPage extends BasePage {
     return this.page.getByTestId('view-patient-overlay');
   }
 
-  /** Read-only patient details inside the view overlay. */
+  /** Patient form in the view overlay (greyed out when not editing). */
   get patientReadonlyView(): Locator {
     return this.page.getByTestId('patient-readonly-view');
   }
 
-  /** Editable patient form inside the view overlay. */
-  get patientEditView(): Locator {
-    return this.page.getByTestId('patient-edit-view');
+  /** Add-patient overlay. */
+  get patientFormOverlay(): Locator {
+    return this.page.getByTestId('patient-form-overlay');
   }
 
-  /** Switches the view overlay from read-only to edit mode. */
+  /** Save control in the view overlay header (visible only while editing). */
+  get patientEditView(): Locator {
+    return this.viewPatientOverlay.getByTestId('save-patient');
+  }
+
+  /** Alias for the add-patient overlay. */
+  get addPatientOverlay(): Locator {
+    return this.patientFormOverlay;
+  }
+
+  /** Toggles between Edit and Cancel on the view overlay. */
   get editPatientButton(): Locator {
     return this.page.getByTestId('edit-patient-btn');
   }
 
-  /** Phone value shown in the read-only patient view. */
+  /** Phone field in the view/edit patient form. */
   get viewPhone(): Locator {
-    return this.page.getByTestId('view-phone');
-  }
-
-  /** Cancel control that closes the view patient overlay. */
-  get cancelViewPatientButton(): Locator {
-    return this.page.getByTestId('cancel-view-patient-btn');
+    return this.viewPatientOverlay.getByTestId('patient-phone');
   }
 
   /** Close (X) control for the view patient overlay. */
@@ -121,48 +142,43 @@ export class StaffDashboardPage extends BasePage {
     return this.page.getByTestId('close-add-visit-overlay');
   }
 
-  /** Add-patient overlay. */
-  get addPatientOverlay(): Locator {
-    return this.page.getByTestId('add-patient-overlay');
-  }
-
   /** Form inside the add-patient overlay. */
   get addPatientForm(): Locator {
-    return this.page.getByTestId('add-patient-form');
+    return this.addPatientFormFields.form;
   }
 
   get addPatientFirstNameInput(): Locator {
-    return this.addPatientOverlay.getByTestId('add-patient-first-name');
+    return this.addPatientFormFields.firstNameInput;
   }
 
   get addPatientLastNameInput(): Locator {
-    return this.addPatientOverlay.getByTestId('add-patient-last-name');
+    return this.addPatientFormFields.lastNameInput;
   }
 
   get addPatientDateOfBirthInput(): Locator {
-    return this.addPatientOverlay.getByTestId('add-patient-dob');
+    return this.addPatientFormFields.dateOfBirthInput;
   }
 
   get addPatientEmailInput(): Locator {
-    return this.addPatientOverlay.getByTestId('add-patient-email');
+    return this.addPatientFormFields.emailInput;
   }
 
   get addPatientPhoneInput(): Locator {
-    return this.addPatientOverlay.getByTestId('add-patient-phone');
+    return this.addPatientFormFields.phoneInput;
   }
 
   get addPatientAddressInput(): Locator {
-    return this.addPatientOverlay.getByTestId('add-patient-address');
+    return this.addPatientFormFields.addressInput;
   }
 
   /** Submits the add-patient form. */
   get saveNewPatientButton(): Locator {
-    return this.addPatientOverlay.getByTestId('save-new-patient');
+    return this.addPatientFormFields.saveButton;
   }
 
   /** Closes the add-patient overlay. */
   get closeAddPatientOverlayButton(): Locator {
-    return this.page.getByTestId('close-add-patient-overlay');
+    return this.page.getByTestId('close-patient-overlay');
   }
 
   /** Delete actions in the patient table (staff UI typically has none). */
@@ -212,11 +228,11 @@ export class StaffDashboardPage extends BasePage {
 
   /** Opens the add-patient overlay if hidden and waits for the form. */
   async openAddPatientModal(): Promise<void> {
-    if (await this.addPatientOverlay.isHidden()) {
+    if (await this.patientFormOverlay.isHidden()) {
       await this.addPatientButton.click();
     }
-    await this.addPatientOverlay.waitFor({ state: 'visible', timeout: 15_000 });
-    await this.addPatientFirstNameInput.waitFor({ state: 'visible', timeout: 15_000 });
+    await this.patientFormOverlay.waitFor({ state: 'visible', timeout: 15_000 });
+    await this.addPatientFormFields.firstNameInput.waitFor({ state: 'visible', timeout: 15_000 });
   }
 
   /**
@@ -224,26 +240,12 @@ export class StaffDashboardPage extends BasePage {
    * @param data - Patient fields to enter; optional fields are skipped when omitted.
    */
   async fillAddPatientForm(data: PatientFormData): Promise<void> {
-    await this.addPatientFirstNameInput.fill(data.firstName);
-    await this.addPatientLastNameInput.fill(data.lastName);
-
-    if (data.dateOfBirth !== undefined) {
-      await this.addPatientDateOfBirthInput.fill(data.dateOfBirth);
-    }
-    if (data.email !== undefined) {
-      await this.addPatientEmailInput.fill(data.email);
-    }
-    if (data.phone !== undefined) {
-      await this.addPatientPhoneInput.fill(data.phone);
-    }
-    if (data.address !== undefined) {
-      await this.addPatientAddressInput.fill(data.address);
-    }
+    await this.addPatientFormFields.fill(data);
   }
 
   /** Submits the add-patient overlay form. */
   async submitAddPatientForm(): Promise<void> {
-    await this.saveNewPatientButton.click();
+    await this.addPatientFormFields.submit();
   }
 
   /**
@@ -272,20 +274,16 @@ export class StaffDashboardPage extends BasePage {
     await this.viewPatientOverlay.waitFor({ state: 'visible' });
   }
 
-  /** Closes the view patient overlay via Cancel. */
-  async closeViewPatientViaCancel(): Promise<void> {
-    await this.cancelViewPatientButton.click();
-  }
-
   /** Closes the view patient overlay via the close (X) button. */
   async closeViewPatientViaCloseButton(): Promise<void> {
     await this.closeViewPatientButton.click();
   }
 
-  /** Switches the open view overlay into edit mode. */
+  /** Enables edit mode on the open view overlay. */
   async enterEditMode(): Promise<void> {
     await this.editPatientButton.click();
     await this.patientEditView.waitFor({ state: 'visible' });
+    await expect(this.patientForm.firstNameInput).toBeEnabled();
   }
 
   /**

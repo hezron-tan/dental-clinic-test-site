@@ -94,10 +94,8 @@
 
   function renderPagination(total, totalPages, start, shown) {
     const pageInfo = document.getElementById('page-info');
-    const firstBtn = document.getElementById('first-page');
     const prevBtn = document.getElementById('prev-page');
     const nextBtn = document.getElementById('next-page');
-    const lastBtn = document.getElementById('last-page');
 
     if (!total) {
       pageInfo.textContent = 'No patients to display';
@@ -109,12 +107,8 @@
         ' · Page ' + currentPage + ' of ' + totalPages;
     }
 
-    const atStart = currentPage <= 1;
-    const atEnd = currentPage >= totalPages;
-    if (firstBtn) firstBtn.disabled = atStart;
-    prevBtn.disabled = atStart;
-    nextBtn.disabled = atEnd;
-    if (lastBtn) lastBtn.disabled = atEnd;
+    prevBtn.disabled = currentPage <= 1;
+    nextBtn.disabled = currentPage >= totalPages;
   }
 
   async function loadPatients(preservePage) {
@@ -385,38 +379,6 @@
     }
   }
 
-  /**
-   * Returns the portal drawer element if present.
-   * @returns {HTMLElement|null}
-   */
-  function getDrawer() {
-    return document.querySelector('.dashboard-drawer');
-  }
-
-  /** Opens the temporary drawer on small screens. */
-  function openMobileDrawer() {
-    const drawer = getDrawer();
-    const backdrop = document.getElementById('drawer-backdrop');
-    const toggle = document.getElementById('drawer-toggle');
-    if (!drawer) return;
-    drawer.classList.add('is-open');
-    if (backdrop) backdrop.hidden = false;
-    if (toggle) toggle.setAttribute('aria-expanded', 'true');
-    document.body.classList.add('drawer-open');
-  }
-
-  /** Closes the temporary drawer on small screens. */
-  function closeMobileDrawer() {
-    const drawer = getDrawer();
-    const backdrop = document.getElementById('drawer-backdrop');
-    const toggle = document.getElementById('drawer-toggle');
-    if (!drawer) return;
-    drawer.classList.remove('is-open');
-    if (backdrop) backdrop.hidden = true;
-    if (toggle) toggle.setAttribute('aria-expanded', 'false');
-    document.body.classList.remove('drawer-open');
-  }
-
   document.addEventListener('DOMContentLoaded', async function () {
     const profile = await Auth.requireRole(['admin', 'staff']);
     if (!profile) return;
@@ -432,23 +394,6 @@
       await Auth.signOut();
       window.location.href = App.siteUrl('login.html');
     });
-
-    const drawerToggle = document.getElementById('drawer-toggle');
-    if (drawerToggle) {
-      drawerToggle.addEventListener('click', function () {
-        const drawer = getDrawer();
-        if (drawer && drawer.classList.contains('is-open')) {
-          closeMobileDrawer();
-        } else {
-          openMobileDrawer();
-        }
-      });
-    }
-
-    const drawerBackdrop = document.getElementById('drawer-backdrop');
-    if (drawerBackdrop) {
-      drawerBackdrop.addEventListener('click', closeMobileDrawer);
-    }
 
     document.getElementById('add-patient-btn').addEventListener('click', showAddPatientForm);
     document.getElementById('cancel-patient-btn').addEventListener('click', hidePatientFormModal);
@@ -500,13 +445,6 @@
       }
     });
 
-    document.getElementById('first-page').addEventListener('click', function () {
-      if (currentPage > 1) {
-        currentPage = 1;
-        renderPatientTable();
-      }
-    });
-
     document.getElementById('prev-page').addEventListener('click', function () {
       if (currentPage > 1) {
         currentPage -= 1;
@@ -518,14 +456,6 @@
       const totalPages = Math.max(1, Math.ceil(filteredPatients.length / PAGE_SIZE));
       if (currentPage < totalPages) {
         currentPage += 1;
-        renderPatientTable();
-      }
-    });
-
-    document.getElementById('last-page').addEventListener('click', function () {
-      const totalPages = Math.max(1, Math.ceil(filteredPatients.length / PAGE_SIZE));
-      if (currentPage < totalPages) {
-        currentPage = totalPages;
         renderPatientTable();
       }
     });
