@@ -220,10 +220,110 @@
 
   function hideAddVisitOverlay() {
     const overlay = document.getElementById('add-visit-overlay');
+    const form = document.getElementById('history-form');
+    if (form) clearHistoryFieldErrors(form);
     overlay.hidden = true;
     overlay.setAttribute('aria-hidden', 'true');
     if (!isAnyOverlayOpen()) {
       setModalOpen(false);
+    }
+  }
+
+  /**
+   * Clears all inline field errors on the add-visit form.
+   * @param {HTMLFormElement} form - History form element.
+   */
+  function clearHistoryFieldErrors(form) {
+    form.querySelectorAll('.form-field').forEach(function (field) {
+      field.classList.remove('has-error');
+      const control = field.querySelector('input, select, textarea');
+      if (control) {
+        control.classList.remove('is-invalid');
+        control.removeAttribute('aria-invalid');
+      }
+      const error = field.querySelector('.field-error');
+      if (error) {
+        error.hidden = true;
+        error.textContent = '';
+      }
+    });
+  }
+
+  /**
+   * Shows an inline error under a named history form field.
+   * @param {HTMLFormElement} form - History form element.
+   * @param {string} fieldName - Form control `name` attribute.
+   * @param {string} message - Error message to display.
+   */
+  function setHistoryFieldError(form, fieldName, message) {
+    const field = form.querySelector('.form-field[data-field="' + fieldName + '"]');
+    if (!field) return;
+    const control = field.querySelector('input, select, textarea');
+    const error = field.querySelector('.field-error');
+    field.classList.add('has-error');
+    if (control) {
+      control.classList.add('is-invalid');
+      control.setAttribute('aria-invalid', 'true');
+    }
+    if (error) {
+      error.textContent = message;
+      error.hidden = false;
+    }
+  }
+
+  /**
+   * Validates required add-visit fields (everything except notes).
+   * @param {HTMLFormElement} form - History form element.
+   * @returns {boolean} True when the form is valid.
+   */
+  function validateHistoryForm(form) {
+    clearHistoryFieldErrors(form);
+    let valid = true;
+    let firstInvalid = null;
+
+    const rules = [
+      { name: 'visit_date', message: 'Please enter a visit date.' },
+      { name: 'procedure_type', message: 'Please select a procedure type.' },
+      { name: 'description', message: 'Please enter a description.' },
+      { name: 'dentist_name', message: 'Please select a dentist.' }
+    ];
+
+    rules.forEach(function (rule) {
+      const control = form.elements.namedItem(rule.name);
+      if (!control || typeof control.value !== 'string') return;
+      const value = control.value.trim();
+      if (!value) {
+        setHistoryFieldError(form, rule.name, rule.message);
+        valid = false;
+        if (!firstInvalid) firstInvalid = control;
+      }
+    });
+
+    if (firstInvalid && typeof firstInvalid.focus === 'function') {
+      firstInvalid.focus();
+    }
+
+    return valid;
+  }
+
+  /**
+   * Clears a single field's error when the user changes its value.
+   * @param {Event} e - Input or change event.
+   */
+  function clearHistoryFieldErrorOnInput(e) {
+    const control = e.target;
+    if (!control || !control.name) return;
+    const field = control.closest('.form-field');
+    if (!field || !field.classList.contains('has-error')) return;
+    if (String(control.value || '').trim()) {
+      field.classList.remove('has-error');
+      control.classList.remove('is-invalid');
+      control.removeAttribute('aria-invalid');
+      const error = field.querySelector('.field-error');
+      if (error) {
+        error.hidden = true;
+        error.textContent = '';
+      }
     }
   }
 
@@ -238,7 +338,9 @@
 
     const form = document.getElementById('history-form');
     form.reset();
+    clearHistoryFieldErrors(form);
     form.visit_date.value = new Date().toISOString().slice(0, 10);
+    await populateDentistSelect(form.dentist_name);
 
     const overlay = document.getElementById('add-visit-overlay');
     overlay.hidden = false;
@@ -246,6 +348,46 @@
     setModalOpen(true);
 
     form.visit_date.focus();
+  }
+
+  /**
+   * Fills the dentist dropdown from the doctors table.
+   * @param {HTMLSelectElement} select - Dentist select element.
+   * @returns {Promise<void>}
+   */
+  async function populateDentistSelect(select) {
+    if (!select) return;
+
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'Select a dentist';
+
+    try {
+      const doctors = await Doctors.list();
+      select.innerHTML = '';
+      select.appendChild(placeholder);
+
+      if (!doctors.length) {
+        const empty = document.createElement('option');
+        empty.value = '';
+        empty.disabled = true;
+        empty.textContent = 'No doctors available — add them in Admin';
+        select.appendChild(empty);
+        return;
+      }
+
+      doctors.forEach(function (doctor) {
+        const option = document.createElement('option');
+        option.value = doctor.name;
+        option.textContent = doctor.name;
+        option.dataset.doctorId = doctor.id;
+        select.appendChild(option);
+      });
+    } catch (err) {
+      console.warn('Could not load doctors for dentist dropdown:', err);
+      select.innerHTML = '';
+      select.appendChild(placeholder);
+    }
   }
 
   async function loadHistory(patientId) {
@@ -329,6 +471,11 @@
     e.preventDefault();
     if (!currentPatientId) return;
     const form = e.target;
+
+    if (!validateHistoryForm(form)) {
+      return;
+    }
+
     const session = await Auth.getSession();
 
     try {
@@ -336,8 +483,8 @@
         patient_id: currentPatientId,
         visit_date: form.visit_date.value,
         procedure_type: form.procedure_type.value,
-        description: form.description.value.trim() || null,
-        dentist_name: form.dentist_name.value.trim() || null,
+        description: form.description.value.trim(),
+        dentist_name: form.dentist_name.value,
         notes: form.history_notes.value.trim() || null,
         created_by: session.user.id
       });
@@ -487,6 +634,8 @@
     document.getElementById('patient-form').addEventListener('submit', saveAddPatientForm);
     document.getElementById('view-patient-form').addEventListener('submit', saveViewPatientForm);
     document.getElementById('history-form').addEventListener('submit', addHistory);
+    document.getElementById('history-form').addEventListener('input', clearHistoryFieldErrorOnInput);
+    document.getElementById('history-form').addEventListener('change', clearHistoryFieldErrorOnInput);
 
     document.querySelector('#patient-table').addEventListener('click', function (e) {
       const viewBtn = e.target.closest('.view-patient');

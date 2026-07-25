@@ -4,18 +4,18 @@ A free-tier dental clinic practice site for **Playwright** (UI + API), **K6** (p
 
 - **Public site** — clinic name, address, contact, hours ([Arcana](https://html5up.net/arcana) template by HTML5 UP)
 - **Staff login** — role-based access (`admin` vs `staff`)
-- **Admin** — edit clinic info, manage patients, storage usage warning at 50%
-- **Staff** — view/edit patients and visit history
-- **Backend** — [Supabase](https://supabase.com) free tier (PostgreSQL + Auth + REST API)
+- **Admin** — edit clinic info, manage patients and doctors (with profile pictures), storage usage warning at 50%
+- **Staff** — view/edit patients and visit history (dentist chosen from the doctors list)
+- **Backend** — [Supabase](https://supabase.com) free tier (PostgreSQL + Auth + REST API + Storage)
 - **Hosting** — [GitHub Pages](https://pages.github.com) (static frontend)
 
 ## Architecture
 
 ```
-GitHub Pages (HTML/JS/CSS)  →  Supabase Auth + PostgreSQL + REST API
+GitHub Pages (HTML/JS/CSS)  →  Supabase Auth + PostgreSQL + REST API + Storage
 ```
 
-GitHub Pages serves static files only. All data and authentication go through Supabase's client SDK and auto-generated REST API — ideal for API automation practice.
+GitHub Pages serves static files only. All data and authentication go through Supabase's client SDK and auto-generated REST API — ideal for API automation practice. Doctor profile pictures use a public Storage bucket (`doctor-avatars`).
 
 ## Quick start
 
@@ -25,6 +25,7 @@ GitHub Pages serves static files only. All data and authentication go through Su
 
 1. Sign up at [supabase.com](https://supabase.com) and create a project.
 2. In **SQL Editor**, run `supabase/schema.sql`, then `supabase/seed.sql`.
+   - Already set up? Add doctors with `supabase/doctors.sql`, then re-run `seed.sql` for sample doctors.
 3. Create `admin@clinic.test` and `staff@clinic.test` users (see setup guide).
 
 ### 2. Configure environment
@@ -74,10 +75,12 @@ Playwright tests run automatically on push/PR via the **Playwright Tests** workf
 
 ## Resetting test data
 
-To wipe patients and history while keeping auth users:
+To wipe patients, visit history, and doctors while keeping auth users:
 
 1. Run `supabase/reset.sql` in the SQL Editor.
-2. Run `supabase/seed.sql` to restore sample patients.
+2. Run `supabase/seed.sql` to restore sample clinic info, patients (12), doctors (3), and sample history.
+
+Optional: clear uploaded avatars with the commented `storage.objects` delete in `reset.sql`.
 
 The admin dashboard shows a **storage warning** when database usage exceeds 50% of the free tier (~500 MB).
 
@@ -87,11 +90,12 @@ The admin dashboard shows a **storage warning** when database usage exceeds 50% 
 |------|----------------|
 | `tests/ui/public.spec.ts` | Public homepage content and nav |
 | `tests/ui/login.spec.ts` | Login, role redirects, logout |
-| `tests/ui/staff.spec.ts` | Patient list, edit details, add history |
+| `tests/ui/staff.spec.ts` | Patient list, edit details, add visit (dentist dropdown from doctors) |
 | `tests/ui/admin.spec.ts` | Clinic info edit, add patient |
+| `tests/ui/negative.spec.ts` | Validation and error paths (including add-visit required-field errors) |
 | `tests/api/supabase.spec.ts` | REST auth, public clinic, patient RLS |
 
-Key `data-testid` attributes are on login, patient forms, clinic form, and navigation.
+Key `data-testid` attributes are on login, patient/doctor forms, clinic form, visit history, and navigation.
 
 ### Playwright self-healing (Healer agent)
 
@@ -272,6 +276,7 @@ Use the `access_token` from the response as `Authorization: Bearer ...` for prot
 │   ├── k6/                 # K6 performance scripts
 │   │   ├── lib/            # Shared config and headers
 │   │   └── clinic-load.js
+│   ├── pages/              # Page Object Model
 │   └── helpers/            # Shared Supabase helpers
 ├── scripts/
 │   ├── generate-config.mjs # Build config.js from env
@@ -279,10 +284,18 @@ Use the `access_token` from the response as `Authorization: Bearer ...` for prot
 │   └── verify-supabase.mjs # Post-setup health check
 ├── index.html              # Public clinic site
 ├── login.html
-├── admin/index.html
-├── staff/index.html
+├── admin/index.html        # Clinic, patients, doctors
+├── staff/index.html        # Patients + visit history
 ├── js/
+│   ├── patients.js
+│   ├── doctors.js          # Doctors CRUD + avatar upload
+│   ├── admin-dashboard.js
+│   └── staff-dashboard.js
 ├── supabase/
+│   ├── schema.sql          # Full schema (incl. doctors + Storage)
+│   ├── doctors.sql         # Incremental doctors migration
+│   ├── seed.sql
+│   └── reset.sql
 └── package.json
 ```
 
@@ -294,7 +307,10 @@ Use the `access_token` from the response as `Authorization: Bearer ...` for prot
 | Edit clinic info | ✓ | |
 | List/create/edit patients | ✓ | ✓ |
 | Delete patients | ✓ | |
+| List/create/edit/delete doctors | ✓ | |
+| View doctors (for visit dentist dropdown) | ✓ | ✓ |
 | View/add visit history | ✓ | ✓ |
+| Upload doctor profile pictures | ✓ | |
 | Storage usage warning | ✓ | |
 
 ## License

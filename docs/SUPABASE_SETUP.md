@@ -31,7 +31,23 @@ Follow these steps once to create your free backend. Takes about 10–15 minutes
 2. Copy the entire contents of [`supabase/schema.sql`](../supabase/schema.sql) and click **Run**.
 3. Open a new query, paste [`supabase/seed.sql`](../supabase/seed.sql), and **Run**.
 
-You should see `clinic_info` and 3 sample patients in **Table Editor**.
+You should see `clinic_info`, sample patients, and sample doctors in **Table Editor**. Also confirm Storage bucket `doctor-avatars` under **Storage**.
+
+### Existing project — add Doctors
+
+If you already ran an older `schema.sql`, run the incremental script instead of re-running the full schema:
+
+1. SQL Editor → paste [`supabase/doctors.sql`](../supabase/doctors.sql) → **Run**.
+2. Optionally re-run [`supabase/seed.sql`](../supabase/seed.sql) to insert sample doctors (skips if any doctors already exist).
+
+This creates:
+
+| Piece | Purpose |
+|-------|---------|
+| `public.doctors` | name, description, profile_picture_url |
+| Storage bucket `doctor-avatars` | Public image uploads (max 2 MB; JPEG/PNG/WebP/GIF) |
+
+Profile pictures are uploaded from the Admin → Doctors form into Supabase Storage; the public URL is saved on the doctor row.
 
 ---
 
@@ -153,12 +169,12 @@ Enable GitHub Pages: **Settings → Pages → Build and deployment → Source: G
 
 ## Resetting test data
 
-When patients/history get messy during automation practice:
+When patients, history, or doctors get messy during automation practice:
 
 1. SQL Editor → run [`supabase/reset.sql`](../supabase/reset.sql)
 2. SQL Editor → run [`supabase/seed.sql`](../supabase/seed.sql)
 
-Auth users and clinic info are preserved (clinic info is re-upserted by seed).
+Auth users and clinic info are preserved (clinic info is re-upserted by seed). Sample patients, doctors, and history are restored when tables were empty after reset.
 
 ---
 

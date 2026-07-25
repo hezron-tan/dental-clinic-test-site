@@ -39,6 +39,12 @@
 								<span class="drawer-item-text">Patients</span>
 							</button>
 						</li>
+						<li>
+							<button type="button" class="tab-btn drawer-item" data-tab="doctors" role="tab" aria-selected="false" data-testid="tab-doctors">
+								<span class="drawer-item-icon" aria-hidden="true"><i class="fas fa-user-md"></i></span>
+								<span class="drawer-item-text">Doctors</span>
+							</button>
+						</li>
 					</ul>
 				</nav>
 
@@ -167,6 +173,30 @@
 									</div>
 								</div>
 							</div>
+
+							<div class="tab-panel" id="tab-doctors" role="tabpanel" hidden data-testid="tab-panel-doctors">
+								<div class="panel">
+									<div class="toolbar">
+										<ul class="actions">
+											<li><button type="button" class="button primary" id="add-doctor-btn" data-testid="add-doctor">+ Doctor</button></li>
+										</ul>
+									</div>
+
+									<div class="table-wrapper">
+										<table class="doctor-table" id="doctor-table" data-testid="doctor-table">
+											<thead>
+												<tr>
+													<th class="col-photo" aria-label="Photo"></th>
+													<th class="col-name">Name</th>
+													<th class="col-description">Description</th>
+													<th class="col-actions" aria-label="Actions"></th>
+												</tr>
+											</thead>
+											<tbody></tbody>
+										</table>
+									</div>
+								</div>
+							</div>
 						</div>
 					</article>
 				</main>
@@ -209,6 +239,36 @@
 			</div>
 		</div>
 
+		<div id="doctor-form-overlay" class="modal-overlay" hidden aria-hidden="true" data-testid="doctor-form-overlay">
+			<div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="doctor-form-title">
+				<button type="button" class="modal-close" id="close-doctor-overlay" aria-label="Close" data-testid="close-doctor-overlay">&times;</button>
+				<div class="modal-header">
+					<h3 id="doctor-form-title">Add Doctor</h3>
+				</div>
+				<div class="modal-body">
+					<form id="doctor-form" class="form-grid" data-testid="doctor-form">
+						<label for="doctor-name">Name</label>
+						<input type="text" id="doctor-name" name="name" required data-testid="doctor-name" />
+
+						<label for="doctor-description">Description</label>
+						<textarea id="doctor-description" name="description" rows="4" data-testid="doctor-description"></textarea>
+
+						<label for="doctor-photo">Profile picture</label>
+						<input type="file" id="doctor-photo" name="profile_picture" accept="image/jpeg,image/png,image/webp,image/gif" data-testid="doctor-photo" />
+						<p class="field-hint">JPEG, PNG, WebP, or GIF · max 2 MB. Stored in Supabase Storage.</p>
+						<div id="doctor-photo-preview" class="doctor-photo-preview" hidden>
+							<img id="doctor-photo-preview-img" alt="Current profile picture" />
+						</div>
+
+						<ul class="actions special modal-actions">
+							<li><button type="submit" class="button primary" data-testid="save-doctor">Save</button></li>
+							<li><button type="button" class="button" id="cancel-doctor-btn">Cancel</button></li>
+						</ul>
+					</form>
+				</div>
+			</div>
+		</div>
+
 		<script src="../assets/js/jquery.min.js"></script>
 		<script src="../assets/js/jquery.dropotron.min.js"></script>
 		<script src="../assets/js/browser.min.js"></script>
@@ -221,6 +281,7 @@
 		<script src="../js/app.js"></script>
 		<script src="../js/auth.js"></script>
 		<script src="../js/patients.js"></script>
+		<script src="../js/doctors.js"></script>
 		<script src="../js/admin-dashboard.js"></script>
 	</body>
 </html>
