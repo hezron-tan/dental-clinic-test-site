@@ -298,6 +298,79 @@ test.describe('Staff dashboard — negative scenarios', () => {
     await expect(staffPage.addVisitOverlay).toBeVisible();
   });
 
+  test('Verify that as a staff user, add visit shows inline errors when required fields are empty', async ({
+    page,
+    patientTracker
+  }) => {
+    const staffPage = new StaffDashboardPage(page);
+    const patient = buildPatient();
+
+    await staffPage.addPatient(patient);
+    patientTracker.track(patient);
+    await staffPage.closeViewPatientViaCloseButton();
+    await staffPage.openAddVisitModal(patientRowMatch(patient));
+
+    await staffPage.historyForm.clearRequiredFields();
+    await staffPage.historyForm.submit();
+
+    await expect(staffPage.addVisitOverlay).toBeVisible();
+    await expect(staffPage.historyForm.visitDateError).toBeVisible();
+    await expect(staffPage.historyForm.visitDateError).toHaveText('Please enter a visit date.');
+    await expect(staffPage.historyForm.procedureError).toBeVisible();
+    await expect(staffPage.historyForm.procedureError).toHaveText('Please select a procedure type.');
+    await expect(staffPage.historyForm.descriptionError).toBeVisible();
+    await expect(staffPage.historyForm.descriptionError).toHaveText('Please enter a description.');
+    await expect(staffPage.historyForm.dentistError).toBeVisible();
+    await expect(staffPage.historyForm.dentistError).toHaveText('Please select a dentist.');
+  });
+
+  test('Verify that as a staff user, add visit shows an inline error when only dentist is missing', async ({
+    page,
+    patientTracker
+  }) => {
+    const staffPage = new StaffDashboardPage(page);
+    const patient = buildPatient();
+    const visit = buildVisitHistory();
+
+    await staffPage.addPatient(patient);
+    patientTracker.track(patient);
+    await staffPage.closeViewPatientViaCloseButton();
+    await staffPage.openAddVisitModal(patientRowMatch(patient));
+
+    await staffPage.historyForm.visitDateInput.fill(visit.visitDate);
+    await staffPage.historyForm.procedureSelect.selectOption(visit.procedure);
+    await staffPage.historyForm.descriptionInput.fill(visit.description!);
+    await staffPage.historyForm.dentistSelect.selectOption('');
+    await staffPage.historyForm.submit();
+
+    await expect(staffPage.addVisitOverlay).toBeVisible();
+    await expect(staffPage.historyForm.dentistError).toBeVisible();
+    await expect(staffPage.historyForm.dentistError).toHaveText('Please select a dentist.');
+    await expect(staffPage.historyForm.visitDateError).toBeHidden();
+    await expect(staffPage.historyForm.procedureError).toBeHidden();
+    await expect(staffPage.historyForm.descriptionError).toBeHidden();
+  });
+
+  test('Verify that as a staff user, add visit field errors clear after the user provides a value', async ({
+    page,
+    patientTracker
+  }) => {
+    const staffPage = new StaffDashboardPage(page);
+    const patient = buildPatient();
+
+    await staffPage.addPatient(patient);
+    patientTracker.track(patient);
+    await staffPage.closeViewPatientViaCloseButton();
+    await staffPage.openAddVisitModal(patientRowMatch(patient));
+
+    await staffPage.historyForm.clearRequiredFields();
+    await staffPage.historyForm.submit();
+    await expect(staffPage.historyForm.descriptionError).toBeVisible();
+
+    await staffPage.historyForm.descriptionInput.fill('Composite filling on tooth #14');
+    await expect(staffPage.historyForm.descriptionError).toBeHidden();
+  });
+
   test('Verify that as a staff user, patient details cannot be saved when required name fields are cleared in edit mode', async ({
     page,
     patientTracker

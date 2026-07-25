@@ -609,7 +609,10 @@ body.login-page .table-wrapper {
 
 body.admin-dashboard table.patient-table,
 body.staff-dashboard table.patient-table,
-body.login-page table.patient-table {
+body.login-page table.patient-table,
+body.admin-dashboard table.doctor-table,
+body.staff-dashboard table.doctor-table,
+body.login-page table.doctor-table {
   border: none !important;
   border-radius: 0 !important;
   border-collapse: collapse;
@@ -617,7 +620,10 @@ body.login-page table.patient-table {
 
 body.admin-dashboard table.patient-table th,
 body.staff-dashboard table.patient-table th,
-body.login-page table.patient-table th {
+body.login-page table.patient-table th,
+body.admin-dashboard table.doctor-table th,
+body.staff-dashboard table.doctor-table th,
+body.login-page table.doctor-table th {
   padding: 16px;
   background: var(--mui-bg-paper) !important;
   border-bottom: 1px solid var(--mui-divider) !important;
@@ -631,7 +637,10 @@ body.login-page table.patient-table th {
 
 body.admin-dashboard table.patient-table td,
 body.staff-dashboard table.patient-table td,
-body.login-page table.patient-table td {
+body.login-page table.patient-table td,
+body.admin-dashboard table.doctor-table td,
+body.staff-dashboard table.doctor-table td,
+body.login-page table.doctor-table td {
   padding: 16px;
   border-bottom: 1px solid var(--mui-divider);
   color: var(--mui-text-primary);
@@ -640,20 +649,110 @@ body.login-page table.patient-table td {
 
 body.admin-dashboard table.patient-table tbody tr:nth-child(even),
 body.staff-dashboard table.patient-table tbody tr:nth-child(even),
-body.login-page table.patient-table tbody tr:nth-child(even) {
+body.login-page table.patient-table tbody tr:nth-child(even),
+body.admin-dashboard table.doctor-table tbody tr:nth-child(even),
+body.staff-dashboard table.doctor-table tbody tr:nth-child(even),
+body.login-page table.doctor-table tbody tr:nth-child(even) {
   background: transparent;
 }
 
 body.admin-dashboard table.patient-table tbody tr:hover,
 body.staff-dashboard table.patient-table tbody tr:hover,
-body.login-page table.patient-table tbody tr:hover {
+body.login-page table.patient-table tbody tr:hover,
+body.admin-dashboard table.doctor-table tbody tr:hover,
+body.staff-dashboard table.doctor-table tbody tr:hover,
+body.login-page table.doctor-table tbody tr:hover {
   background: var(--mui-action-hover);
 }
 
 body.admin-dashboard table.patient-table tbody tr:last-child td,
 body.staff-dashboard table.patient-table tbody tr:last-child td,
-body.login-page table.patient-table tbody tr:last-child td {
+body.login-page table.patient-table tbody tr:last-child td,
+body.admin-dashboard table.doctor-table tbody tr:last-child td,
+body.staff-dashboard table.doctor-table tbody tr:last-child td,
+body.login-page table.doctor-table tbody tr:last-child td {
   border-bottom: none;
+}
+
+/* MUI Avatar — doctor list + form preview */
+body.admin-dashboard .doctor-avatar,
+body.staff-dashboard .doctor-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--mui-action-selected);
+  color: var(--mui-primary-dark);
+  font-family: Roboto, Helvetica, Arial, sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1;
+  box-shadow: none;
+}
+
+body.admin-dashboard .doctor-avatar--placeholder,
+body.staff-dashboard .doctor-avatar--placeholder {
+  color: var(--mui-primary-dark);
+}
+
+body.admin-dashboard .doctor-photo-preview img,
+body.staff-dashboard .doctor-photo-preview img {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: none;
+  box-shadow: var(--mui-shadow-1);
+  background-color: var(--mui-action-selected);
+}
+
+body.admin-dashboard .field-hint,
+body.staff-dashboard .field-hint {
+  margin: calc(var(--mui-spacing) * 0.5) 0 calc(var(--mui-spacing) * 1.5);
+  color: var(--mui-text-secondary);
+  font-size: 0.75rem;
+  letter-spacing: 0.03333em;
+  line-height: 1.66;
+}
+
+body.admin-dashboard table.doctor-table td.col-photo,
+body.admin-dashboard table.doctor-table th.col-photo {
+  width: 72px;
+  padding-right: 8px;
+  vertical-align: middle;
+}
+
+body.admin-dashboard table.doctor-table td.col-description {
+  color: var(--mui-text-secondary);
+}
+
+body.admin-dashboard table.doctor-table .col-actions {
+  width: 96px;
+  text-align: right;
+}
+
+/* MUI-ish file input (doctor profile picture) */
+body.admin-dashboard .form-grid input[type='file'],
+body.staff-dashboard .form-grid input[type='file'] {
+  padding: 10px 12px !important;
+  height: auto !important;
+  min-height: 40px;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+body.admin-dashboard .form-grid input[type='file']::file-selector-button,
+body.staff-dashboard .form-grid input[type='file']::file-selector-button {
+  margin-right: 12px;
+  padding: 6px 16px;
+  border: none;
+  border-radius: var(--mui-shape-radius);
+  background-color: var(--mui-action-selected);
+  color: var(--mui-primary-main);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.02857em;
+  text-transform: uppercase;
+  cursor: pointer;
 }
 
 /* —— IconButton —— */

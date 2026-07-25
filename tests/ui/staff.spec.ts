@@ -180,6 +180,41 @@ staffTest.describe('Staff dashboard', () => {
     await expect(staffPage.historyForm.historyEntries.first()).toContainText(visit.procedure);
   });
 
+  staffTest('Verify that as a staff, the dentist field is a dropdown populated from doctors', async ({ staffPage }) => {
+    const patient = await addTestPatient(staffPage);
+
+    await staffPage.openAddVisitModal(patientRowMatch(patient));
+
+    await expect(staffPage.historyForm.dentistSelect).toBeVisible();
+    const dentists = await staffPage.historyForm.dentistOptionLabels();
+    expect(dentists.length).toBeGreaterThan(0);
+    await expect(staffPage.historyForm.dentistSelect.locator('option').first()).toHaveText('Select a dentist');
+  });
+
+  staffTest('Verify that as a staff, I can add a visit with a selected dentist and without notes', async ({ staffPage }) => {
+    const visit = buildVisitHistory();
+    const patient = await addTestPatient(staffPage);
+
+    await staffPage.openAddVisitModal(patientRowMatch(patient));
+    const dentists = await staffPage.historyForm.dentistOptionLabels();
+    expect(dentists.length).toBeGreaterThan(0);
+    const dentistName = dentists[0];
+
+    await staffPage.historyForm.fill({
+      ...visit,
+      dentist: dentistName
+    });
+    await staffPage.historyForm.notesInput.fill('');
+    await staffPage.historyForm.submit();
+
+    await expectSuccessToast(staffPage, /updated/i);
+    await expect(staffPage.addVisitOverlay).toBeHidden();
+
+    await staffPage.openViewPatient(patientRowMatch(patient));
+    await expect(staffPage.historyForm.historyEntries.first()).toContainText(visit.procedure);
+    await expect(staffPage.historyForm.historyEntries.first()).toContainText(dentistName);
+  });
+
   staffTest('Verify that as a staff, I can search patients by name', async ({ staffPage }) => {
     const targetPatient = await addTestPatient(staffPage);
     const otherPatient = await addTestPatient(staffPage);

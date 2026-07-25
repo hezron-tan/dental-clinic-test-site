@@ -32,7 +32,25 @@ select * from (values
   ('Carlos', 'Mendez', '1992-07-22'::date, 'carlos.m@example.test', '(503) 555-2001',
    '88 Pine St, Portland, OR', 'Maria Mendez', '(503) 555-2002', 'Allergic to penicillin'),
   ('Diana', 'Chen', '1978-11-05'::date, 'diana.c@example.test', '(503) 555-3001',
-   '12 River Rd, Portland, OR', 'James Chen', '(503) 555-3002', null)
+   '12 River Rd, Portland, OR', 'James Chen', '(503) 555-3002', null),
+  ('Ethan', 'Brooks', '1990-01-18'::date, 'ethan.b@example.test', '(503) 555-4001',
+   '210 Hawthorne Blvd, Portland, OR', 'Laura Brooks', '(503) 555-4002', 'Prefers morning appointments'),
+  ('Fatima', 'Hassan', '1988-09-30'::date, 'fatima.h@example.test', '(503) 555-5001',
+   '77 Alberta St, Portland, OR', 'Omar Hassan', '(503) 555-5002', 'Wears retainer at night'),
+  ('Grace', 'Okafor', '2001-04-14'::date, 'grace.o@example.test', '(503) 555-6001',
+   '5 Division St, Portland, OR', 'Ngozi Okafor', '(503) 555-6002', null),
+  ('Hiro', 'Tanaka', '1975-06-08'::date, 'hiro.t@example.test', '(503) 555-7001',
+   '332 NW 23rd Ave, Portland, OR', 'Yuki Tanaka', '(503) 555-7002', 'History of TMJ discomfort'),
+  ('Isabel', 'Rivera', '1995-12-21'::date, 'isabel.r@example.test', '(503) 555-8001',
+   '19 SE Stark St, Portland, OR', 'Luis Rivera', '(503) 555-8002', 'Allergic to latex'),
+  ('Jamal', 'Washington', '1983-02-27'::date, 'jamal.w@example.test', '(503) 555-9001',
+   '640 Killingsworth St, Portland, OR', 'Keisha Washington', '(503) 555-9002', 'Needs bilingual Spanish forms'),
+  ('Karen', 'Nguyen', '1969-08-03'::date, 'karen.n@example.test', '(503) 555-0101',
+   '88 Belmont St, Portland, OR', 'Minh Nguyen', '(503) 555-0102', 'Implant candidate — consult scheduled'),
+  ('Liam', 'Patel', '1998-05-16'::date, 'liam.p@example.test', '(503) 555-1101',
+   '401 Mississippi Ave, Portland, OR', 'Priya Patel', '(503) 555-1102', null),
+  ('Maya', 'Sullivan', '1987-10-09'::date, 'maya.s@example.test', '(503) 555-1201',
+   '27 NE Broadway, Portland, OR', 'Tom Sullivan', '(503) 555-1202', 'Pregnant — use pregnancy-safe protocols')
 ) as v(first_name, last_name, date_of_birth, email, phone, address,
        emergency_contact_name, emergency_contact_phone, notes)
 where not exists (select 1 from public.patients limit 1);
@@ -55,3 +73,21 @@ where p.first_name = 'Alice' and p.last_name = 'Johnson'
     select 1 from public.patient_history h
     where h.patient_id = p.id and h.visit_date = '2025-06-10'
   );
+
+-- Sample doctors (only if table is empty; profile pictures uploaded via admin UI)
+insert into public.doctors (name, description)
+select * from (values
+  (
+    'Dr. Emily Smith',
+    'Lead dentist specializing in preventive care and restorative dentistry. 15 years of experience.'
+  ),
+  (
+    'Dr. James Park',
+    'Orthodontist focused on clear aligners and traditional braces for teens and adults.'
+  ),
+  (
+    'Dr. Sarah Nguyen',
+    'Pediatric dentist who makes visits comfortable for children and anxious patients.'
+  )
+) as v(name, description)
+where not exists (select 1 from public.doctors limit 1);

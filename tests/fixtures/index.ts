@@ -1,6 +1,7 @@
 import { test as base, expect } from '@playwright/test';
 import type { ClinicFormData } from '../models';
 import { fetchClinicInfo, restoreClinicInfo } from '../helpers/clinic-api';
+import { DoctorTracker } from '../helpers/doctors-api';
 import { PatientTracker } from '../helpers/patients-api';
 import { hasAdminCredentials } from '../helpers/supabase';
 import {
@@ -31,10 +32,15 @@ type BaseFixtures = {
    * when admin credentials are available.
    */
   patientTracker: PatientTracker;
+  /**
+   * Collects doctors created during a test and deletes them via API in teardown
+   * when admin credentials are available. Never tracks seed doctors.
+   */
+  doctorTracker: DoctorTracker;
 };
 
 /**
- * Base Playwright test with shared page objects and patient cleanup.
+ * Base Playwright test with shared page objects and patient/doctor cleanup.
  * Specs that need a specific auth role should prefer {@link adminTest},
  * {@link staffTest}, or {@link unauthenticatedTest}.
  */
@@ -55,6 +61,18 @@ export const test = base.extend<BaseFixtures>({
    */
   patientTracker: async ({ request }, use) => {
     const tracker = new PatientTracker();
+    await use(tracker);
+    if (hasAdminCredentials()) {
+      await tracker.cleanup(request);
+    }
+  },
+
+  /**
+   * Tracks doctors created in the test; after the test, deletes them via API
+   * when `ADMIN_PASSWORD` is configured. Seed doctors are never deleted.
+   */
+  doctorTracker: async ({ request }, use) => {
+    const tracker = new DoctorTracker();
     await use(tracker);
     if (hasAdminCredentials()) {
       await tracker.cleanup(request);
@@ -95,15 +113,20 @@ export const adminTest = test.extend<{
   },
 
   /**
-   * Admin dashboard page object whose `addPatient` also registers the patient
-   * with {@link BaseFixtures.patientTracker} for API cleanup.
+   * Admin dashboard page object whose `addPatient` / `addDoctor` also register
+   * rows with the matching trackers for API cleanup.
    */
-  adminPage: async ({ page, patientTracker }, use) => {
+  adminPage: async ({ page, patientTracker, doctorTracker }, use) => {
     const adminPage = new AdminDashboardPage(page);
     const originalAddPatient = adminPage.addPatient.bind(adminPage);
     adminPage.addPatient = async (data) => {
       await originalAddPatient(data);
       patientTracker.track(data);
+    };
+    const originalAddDoctor = adminPage.addDoctor.bind(adminPage);
+    adminPage.addDoctor = async (data) => {
+      await originalAddDoctor(data);
+      doctorTracker.track(data);
     };
     await use(adminPage);
   }

@@ -1,7 +1,16 @@
 import { adminTest, expect } from '../fixtures';
 import { adminAuthState } from '../helpers/auth-state';
 import { hasAdminCredentials } from '../helpers/supabase';
-import { buildClinicUpdate, buildPatient, patientRowMatch, patientSearchQuery, testEmail } from '../helpers/test-data';
+import {
+  buildClinicUpdate,
+  buildDoctor,
+  buildPatient,
+  doctorFixturePath,
+  patientRowMatch,
+  patientSearchQuery,
+  SEED_DOCTOR_NAMES,
+  testEmail
+} from '../helpers/test-data';
 import { PublicPage } from '../pages';
 
 const credentialsMessage =
@@ -150,6 +159,79 @@ adminTest.describe('Admin dashboard', () => {
     await expect(publicPage.clinicPhone).toHaveText(update.phone!);
     await expect(publicPage.clinicEmail).toHaveText(update.email!);
     await expect(publicPage.clinicHours).toHaveText(update.hours!);
+  });
+
+  adminTest('Verify that as an admin, I can switch to the doctors sidebar section', async ({ adminPage }) => {
+    await adminPage.showDoctorsTab();
+    await expect(adminPage.pageSectionTitle).toHaveText('Doctors');
+    await expect(adminPage.doctorsPanel).toBeVisible();
+    await expect(adminPage.doctorTable.table).toBeVisible();
+    await expect(adminPage.addDoctorButton).toHaveText('+ Doctor');
+
+    for (const seedName of SEED_DOCTOR_NAMES) {
+      await expect(adminPage.doctorTable.rowByName(seedName)).toBeVisible();
+    }
+  });
+
+  adminTest('Verify that as an admin, I can add a new doctor', async ({ adminPage }) => {
+    const doctor = buildDoctor();
+
+    await adminPage.addDoctor(doctor);
+    await expect(adminPage.alert).toContainText(/saved/i);
+    await expect(adminPage.doctorTable.rowByName(doctor.name)).toBeVisible({ timeout: 10_000 });
+    await expect(adminPage.doctorTable.rowByName(doctor.name)).toContainText(doctor.description!);
+  });
+
+  adminTest('Verify that as an admin, I can add a doctor with a profile picture', async ({ adminPage }) => {
+    const doctor = buildDoctor({
+      profilePicturePath: doctorFixturePath('dr-james-park-solo.png')
+    });
+
+    await adminPage.addDoctor(doctor);
+    await expect(adminPage.alert).toContainText(/saved/i);
+    await expect(adminPage.doctorTable.rowByName(doctor.name)).toBeVisible({ timeout: 10_000 });
+    await expect(adminPage.doctorTable.avatarImageForDoctor(doctor.name)).toBeVisible({ timeout: 10_000 });
+  });
+
+  adminTest('Verify that as an admin, I can edit an existing doctor', async ({ adminPage, doctorTracker }) => {
+    const doctor = buildDoctor();
+    const updatedDescription = 'Updated specialty for Playwright edit coverage.';
+    const renamed = buildDoctor({ description: updatedDescription });
+
+    await adminPage.addDoctor(doctor);
+    await expect(adminPage.alert).toContainText(/saved/i);
+
+    doctorTracker.untrack(doctor);
+    doctorTracker.track(renamed);
+
+    await adminPage.editDoctor(doctor.name, {
+      name: renamed.name,
+      description: updatedDescription
+    });
+    await expect(adminPage.alert).toContainText(/saved/i);
+    await expect(adminPage.doctorTable.rowByName(renamed.name)).toBeVisible({ timeout: 10_000 });
+    await expect(adminPage.doctorTable.rowByName(renamed.name)).toContainText(updatedDescription);
+    await expect(adminPage.doctorTable.rowByName(doctor.name)).toHaveCount(0);
+  });
+
+  adminTest('Verify that as an admin, I can delete a newly added doctor without removing seed doctors', async ({
+    adminPage,
+    doctorTracker
+  }) => {
+    const doctor = buildDoctor();
+
+    await adminPage.addDoctor(doctor);
+    await expect(adminPage.alert).toContainText(/saved/i);
+    await expect(adminPage.doctorTable.rowByName(doctor.name)).toBeVisible({ timeout: 10_000 });
+
+    doctorTracker.untrack(doctor);
+    await adminPage.deleteDoctor(doctor.name);
+    await expect(adminPage.alert).toContainText(/deleted/i);
+    await expect(adminPage.doctorTable.rowByName(doctor.name)).toHaveCount(0);
+
+    for (const seedName of SEED_DOCTOR_NAMES) {
+      await expect(adminPage.doctorTable.rowByName(seedName)).toBeVisible();
+    }
   });
 
   adminTest('Verify that as an admin, I can log out to the login page', async ({ adminPage, page }) => {
