@@ -236,7 +236,7 @@ test.describe('Staff dashboard — negative scenarios', () => {
     await expect(staffPage.alert).toBeHidden();
   });
 
-  test('Verify that as a staff user, the view overlay stays open and an error toast is shown when patient save fails', async ({
+  test('Verify that as a staff user, the edit overlay stays open and an error toast is shown when patient save fails', async ({
     page,
     patientTracker
   }) => {
@@ -264,6 +264,7 @@ test.describe('Staff dashboard — negative scenarios', () => {
 
     await expectErrorToast(staffPage, /can't be updated/i);
     await expect(staffPage.viewPatientOverlay).toBeVisible();
+    await expect(staffPage.patientEditView).toBeVisible();
   });
 
   test('Verify that as a staff user, the add visit overlay stays open and an error toast is shown when visit save fails', async ({
@@ -314,6 +315,7 @@ test.describe('Staff dashboard — negative scenarios', () => {
 
     await expect(staffPage.patientForm.firstNameInput).toHaveJSProperty('validity.valid', false);
     await expect(staffPage.viewPatientOverlay).toBeVisible();
+    await expect(staffPage.patientEditView).toBeVisible();
     await expect(staffPage.toast).toHaveCount(0);
   });
 });

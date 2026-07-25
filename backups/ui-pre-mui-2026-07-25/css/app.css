@@ -721,26 +721,6 @@ table.patient-table .col-actions {
   text-align: center;
 }
 
-/*
- * Admin patients table has no DOB column — rebalance widths so columns
- * fill the row (shared staff widths only sum to ~74% without .col-dob).
- */
-body.admin-dashboard table.patient-table .col-name {
-  width: 32%;
-}
-
-body.admin-dashboard table.patient-table .col-phone {
-  width: 22%;
-}
-
-body.admin-dashboard table.patient-table .col-email {
-  width: 38%;
-}
-
-body.admin-dashboard table.patient-table .col-actions {
-  width: 8%;
-}
-
 table.patient-table td.col-actions,
 table.patient-table th.col-actions {
   overflow: visible;
@@ -886,13 +866,6 @@ table.patient-table th.col-actions {
   gap: 1em;
   align-items: center;
   justify-content: space-between;
-}
-
-.pagination-controls {
-  display: inline-flex;
-  flex: 0 0 auto;
-  gap: 0.35em;
-  align-items: center;
 }
 
 .pagination-bar #page-info {

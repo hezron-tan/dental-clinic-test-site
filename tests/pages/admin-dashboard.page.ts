@@ -33,7 +33,7 @@ export class AdminDashboardPage extends BasePage {
     this.patientSearch = new PatientSearchComponent(page, this.patientsPanel);
   }
 
-  /** Logout control in the admin chrome. */
+  /** Logout control in the admin sidebar drawer. */
   get logoutButton(): Locator {
     return this.page.getByTestId('logout-btn');
   }
@@ -41,6 +41,16 @@ export class AdminDashboardPage extends BasePage {
   /** Greeting that shows the signed-in admin user. */
   get userGreeting(): Locator {
     return this.page.getByTestId('user-greeting');
+  }
+
+  /** App bar title for the active sidebar section. */
+  get pageSectionTitle(): Locator {
+    return this.page.locator('#page-section-title');
+  }
+
+  /** Left navigation drawer. */
+  get drawer(): Locator {
+    return this.page.locator('#admin-drawer');
   }
 
   /** Admin status/success/error alert. */
@@ -53,17 +63,17 @@ export class AdminDashboardPage extends BasePage {
     return this.page.getByTestId('storage-warning');
   }
 
-  /** Tab list for Clinic / Patients. */
+  /** Sidebar nav list for Clinic / Patients. */
   get tabs(): Locator {
     return this.page.getByTestId('admin-tabs');
   }
 
-  /** Clinic information tab control. */
+  /** Clinic information sidebar control. */
   get clinicTab(): Locator {
     return this.page.getByTestId('tab-clinic');
   }
 
-  /** Patients tab control. */
+  /** Patients sidebar control. */
   get patientsTab(): Locator {
     return this.page.getByTestId('tab-patients');
   }
@@ -148,12 +158,13 @@ export class AdminDashboardPage extends BasePage {
     await this.page.waitForURL(/login\.html/, { timeout: 15_000 });
   }
 
-  /** Selects the Clinic tab. */
+  /** Selects the Clinic sidebar section. */
   async showClinicTab(): Promise<void> {
     await this.clinicTab.click();
+    await this.clinicPanel.waitFor({ state: 'visible', timeout: 15_000 });
   }
 
-  /** Selects the Patients tab (no-op if already selected) and waits for the panel. */
+  /** Selects the Patients sidebar section (no-op if already selected) and waits for the panel. */
   async showPatientsTab(): Promise<void> {
     const selected = await this.patientsTab.getAttribute('aria-selected');
     if (selected !== 'true') {

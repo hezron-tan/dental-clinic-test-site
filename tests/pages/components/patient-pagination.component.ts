@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 
-/** Shared previous/next pagination controls for the patient list. */
+/** Shared first/prev/next/last pagination controls for the patient list. */
 export class PatientPaginationComponent {
   /**
    * @param page - Playwright page that contains pagination.
@@ -10,6 +10,11 @@ export class PatientPaginationComponent {
   /** Pagination bar container. */
   get bar(): Locator {
     return this.page.getByTestId('patient-pagination');
+  }
+
+  /** Go to the first page. */
+  get firstButton(): Locator {
+    return this.page.getByTestId('first-page');
   }
 
   /** Go to previous page. */
@@ -22,9 +27,19 @@ export class PatientPaginationComponent {
     return this.page.getByTestId('next-page');
   }
 
+  /** Go to the last page. */
+  get lastButton(): Locator {
+    return this.page.getByTestId('last-page');
+  }
+
   /** Text such as "Page 1 of 3" or "Showing …". */
   get pageInfo(): Locator {
     return this.page.getByTestId('page-info');
+  }
+
+  /** Clicks the first-page control. */
+  async goToFirstPage(): Promise<void> {
+    await this.firstButton.click();
   }
 
   /** Clicks the next-page control. */
@@ -35,6 +50,11 @@ export class PatientPaginationComponent {
   /** Clicks the previous-page control. */
   async goToPreviousPage(): Promise<void> {
     await this.prevButton.click();
+  }
+
+  /** Clicks the last-page control. */
+  async goToLastPage(): Promise<void> {
+    await this.lastButton.click();
   }
 
   /**
