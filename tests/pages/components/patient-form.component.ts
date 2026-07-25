@@ -3,7 +3,7 @@ import type { PatientFormData } from '../../models';
 
 /**
  * Shared add/edit patient form fields.
- * Optionally scoped to an overlay/root locator (e.g. staff view overlay).
+ * Optionally scoped to an overlay/root locator (e.g. patient-form-overlay).
  */
 export class PatientFormComponent {
   private readonly root: Page | Locator;

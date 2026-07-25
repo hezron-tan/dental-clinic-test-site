@@ -1,0 +1,1470 @@
+/**
+ * Material UI–inspired portal theme for admin, staff, and login pages.
+ * Applies Material Design 2 patterns (elevation, shape, typography, components)
+ * without requiring React / @mui/material. Brand primary mapped to clinic blue.
+ * @see https://mui.com/material-ui/
+ */
+
+body.admin-dashboard,
+body.staff-dashboard,
+body.login-page {
+  /* Palette (custom theme, MUI structure) */
+  --mui-primary-main: #0288d1;
+  --mui-primary-light: #03a9f4;
+  --mui-primary-dark: #01579b;
+  --mui-primary-contrast: #ffffff;
+  --mui-secondary-main: #00acc1;
+  --mui-secondary-dark: #00838f;
+  --mui-error-main: #d32f2f;
+  --mui-error-light: #ef5350;
+  --mui-warning-main: #ed6c02;
+  --mui-warning-bg: #fff4e5;
+  --mui-info-main: #0288d1;
+  --mui-success-main: #2e7d32;
+  --mui-text-primary: rgba(0, 0, 0, 0.87);
+  --mui-text-secondary: rgba(0, 0, 0, 0.6);
+  --mui-text-disabled: rgba(0, 0, 0, 0.38);
+  --mui-divider: rgba(0, 0, 0, 0.12);
+  --mui-action-hover: rgba(0, 0, 0, 0.04);
+  --mui-action-selected: rgba(2, 136, 209, 0.08);
+  --mui-bg-default: #f5f5f5;
+  --mui-bg-paper: #ffffff;
+  --mui-shape-radius: 4px;
+  --mui-spacing: 8px;
+
+  /* Elevation (Material / MUI shadows array subset) */
+  --mui-shadow-1: 0px 2px 1px -1px rgba(0, 0, 0, 0.2),
+    0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 1px 3px 0px rgba(0, 0, 0, 0.12);
+  --mui-shadow-2: 0px 3px 1px -2px rgba(0, 0, 0, 0.2),
+    0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+  --mui-shadow-4: 0px 2px 4px -1px rgba(0, 0, 0, 0.2),
+    0px 4px 5px 0px rgba(0, 0, 0, 0.14), 0px 1px 10px 0px rgba(0, 0, 0, 0.12);
+  --mui-shadow-8: 0px 5px 5px -3px rgba(0, 0, 0, 0.2),
+    0px 8px 10px 1px rgba(0, 0, 0, 0.14), 0px 3px 14px 2px rgba(0, 0, 0, 0.12);
+  --mui-shadow-16: 0px 8px 10px -5px rgba(0, 0, 0, 0.2),
+    0px 16px 24px 2px rgba(0, 0, 0, 0.14), 0px 6px 30px 5px rgba(0, 0, 0, 0.12);
+  --mui-shadow-24: 0px 11px 15px -7px rgba(0, 0, 0, 0.2),
+    0px 24px 38px 3px rgba(0, 0, 0, 0.14), 0px 9px 46px 8px rgba(0, 0, 0, 0.12);
+
+  --mui-transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  font-size: 14px;
+  line-height: 1.43;
+  letter-spacing: 0.01071em;
+  color: var(--mui-text-primary);
+  background: var(--mui-bg-default) !important;
+  background-image: none !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+body.admin-dashboard *,
+body.staff-dashboard *,
+body.login-page *,
+body.admin-dashboard *::before,
+body.staff-dashboard *::before,
+body.login-page *::before,
+body.admin-dashboard *::after,
+body.staff-dashboard *::after,
+body.login-page *::after {
+  box-sizing: border-box;
+}
+
+/* —— AppBar (elevation 4) —— */
+body.admin-dashboard #header,
+body.staff-dashboard #header,
+body.login-page #header {
+  background-color: var(--mui-primary-main) !important;
+  background-image: none !important;
+  padding: 0 !important;
+  box-shadow: var(--mui-shadow-4);
+  position: relative;
+  z-index: 1100;
+}
+
+body.admin-dashboard #header h1,
+body.staff-dashboard #header h1,
+body.login-page #header h1 {
+  padding: calc(var(--mui-spacing) * 1.5) calc(var(--mui-spacing) * 3) !important;
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: 0.0075em;
+  line-height: 1.6;
+}
+
+body.admin-dashboard #header h1 a,
+body.staff-dashboard #header h1 a,
+body.login-page #header h1 a {
+  color: var(--mui-primary-contrast) !important;
+  font-weight: 500;
+  text-decoration: none;
+  border: 0;
+}
+
+body.admin-dashboard #header h1 a em,
+body.staff-dashboard #header h1 a em,
+body.login-page #header h1 a em {
+  color: rgba(255, 255, 255, 0.85) !important;
+  font-style: normal;
+  font-weight: 400;
+}
+
+body.admin-dashboard #nav,
+body.staff-dashboard #nav,
+body.login-page #nav {
+  background-color: var(--mui-primary-dark) !important;
+  background-image: none !important;
+  border-top: none !important;
+  min-height: 48px;
+}
+
+body.admin-dashboard #nav:after,
+body.staff-dashboard #nav:after,
+body.login-page #nav:after {
+  display: none !important;
+}
+
+body.admin-dashboard #nav > ul,
+body.staff-dashboard #nav > ul,
+body.login-page #nav > ul {
+  text-align: right;
+  padding: 0 calc(var(--mui-spacing) * 2) !important;
+  margin: 0;
+}
+
+body.admin-dashboard #nav > ul > li a,
+body.staff-dashboard #nav > ul > li a,
+body.login-page #nav > ul > li a {
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.02857em;
+  text-transform: uppercase;
+  padding: 12px 16px !important;
+  border-radius: var(--mui-shape-radius);
+  transition: background-color var(--mui-transition), color var(--mui-transition);
+}
+
+body.admin-dashboard #nav > ul > li:hover a,
+body.staff-dashboard #nav > ul > li:hover a,
+body.login-page #nav > ul > li:hover a {
+  color: #fff !important;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+body.admin-dashboard #nav > ul > li.current:before,
+body.staff-dashboard #nav > ul > li.current:before,
+body.login-page #nav > ul > li.current:before {
+  display: none !important;
+}
+
+/* —— Page / Paper —— */
+body.admin-dashboard .wrapper.style1,
+body.staff-dashboard .wrapper.style1,
+body.login-page .wrapper.style1 {
+  background: transparent !important;
+  background-image: none !important;
+  padding-top: calc(var(--mui-spacing) * 3);
+  padding-bottom: calc(var(--mui-spacing) * 4);
+}
+
+body.admin-dashboard #content > article,
+body.staff-dashboard #content > article,
+body.login-page #content > article {
+  background: var(--mui-bg-paper) !important;
+  border: none !important;
+  border-radius: var(--mui-shape-radius) !important;
+  box-shadow: var(--mui-shadow-1) !important;
+  padding: calc(var(--mui-spacing) * 3) !important;
+}
+
+body.admin-dashboard #content > article > header,
+body.staff-dashboard #content > article > header,
+body.login-page #content > article > header {
+  margin-bottom: calc(var(--mui-spacing) * 2);
+  padding-bottom: calc(var(--mui-spacing) * 2);
+  border-bottom: 1px solid var(--mui-divider);
+}
+
+body.admin-dashboard #content > article > header h2,
+body.staff-dashboard #content > article > header h2,
+body.login-page #content > article > header h2 {
+  margin: 0 0 calc(var(--mui-spacing) * 0.5);
+  font-family: inherit;
+  font-size: 1.5rem;
+  font-weight: 400;
+  line-height: 1.334;
+  letter-spacing: 0;
+  color: var(--mui-text-primary) !important;
+}
+
+body.admin-dashboard #content > article > header p,
+body.staff-dashboard #content > article > header p,
+body.login-page #content > article > header p {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: calc(var(--mui-spacing) * 1);
+  color: var(--mui-text-secondary) !important;
+  font-size: 0.875rem;
+}
+
+/* —— Chip (role badge) —— */
+body.admin-dashboard .badge,
+body.staff-dashboard .badge,
+body.login-page .badge {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 16px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  border: none;
+  line-height: 1;
+}
+
+body.admin-dashboard .badge-admin,
+body.staff-dashboard .badge-admin,
+body.login-page .badge-admin {
+  background: rgba(2, 136, 209, 0.12);
+  color: var(--mui-primary-dark);
+}
+
+body.admin-dashboard .badge-staff,
+body.staff-dashboard .badge-staff,
+body.login-page .badge-staff {
+  background: rgba(0, 172, 193, 0.12);
+  color: var(--mui-secondary-dark);
+}
+
+/* —— Alerts (MUI Alert–like) —— */
+body.admin-dashboard .alert,
+body.staff-dashboard .alert,
+body.login-page .alert {
+  display: flex;
+  align-items: flex-start;
+  padding: 6px 16px;
+  margin-bottom: calc(var(--mui-spacing) * 2);
+  border-radius: var(--mui-shape-radius);
+  border: none;
+  font-size: 0.875rem;
+  line-height: 1.43;
+}
+
+/* display:flex above would otherwise override the native [hidden] rule */
+body.admin-dashboard .alert[hidden],
+body.staff-dashboard .alert[hidden],
+body.login-page .alert[hidden] {
+  display: none !important;
+}
+
+body.admin-dashboard .alert-error,
+body.staff-dashboard .alert-error,
+body.login-page .alert-error {
+  background: #fdeded;
+  color: #5f2120;
+}
+
+body.admin-dashboard .alert-warning,
+body.staff-dashboard .alert-warning,
+body.login-page .alert-warning {
+  background: var(--mui-warning-bg);
+  color: #663c00;
+}
+
+body.admin-dashboard .alert-info,
+body.staff-dashboard .alert-info,
+body.login-page .alert-info,
+body.admin-dashboard .alert-success,
+body.staff-dashboard .alert-success,
+body.login-page .alert-success {
+  background: #e5f6fd;
+  color: #014361;
+}
+
+/* —— Tabs —— */
+body.admin-dashboard .tab-list,
+body.staff-dashboard .tab-list,
+body.login-page .tab-list {
+  border-bottom: 1px solid var(--mui-divider);
+  gap: 0;
+  margin-bottom: calc(var(--mui-spacing) * 3);
+}
+
+body.admin-dashboard .tab-btn,
+body.staff-dashboard .tab-btn,
+body.login-page .tab-btn {
+  position: relative;
+  min-height: 48px;
+  padding: 12px 16px;
+  margin: 0;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  color: var(--mui-text-secondary);
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.02857em;
+  text-transform: uppercase;
+  opacity: 1;
+  transition: color var(--mui-transition), background-color var(--mui-transition);
+}
+
+body.admin-dashboard .tab-btn:hover,
+body.staff-dashboard .tab-btn:hover,
+body.login-page .tab-btn:hover {
+  background-color: var(--mui-action-hover) !important;
+  color: var(--mui-text-primary);
+  opacity: 1;
+}
+
+body.admin-dashboard .tab-btn.active,
+body.staff-dashboard .tab-btn.active,
+body.login-page .tab-btn.active {
+  color: var(--mui-primary-main);
+  border-bottom-color: var(--mui-primary-main);
+  background: transparent !important;
+}
+
+/* —— Panel / Paper sections —— */
+body.admin-dashboard .panel,
+body.staff-dashboard .panel,
+body.login-page .panel {
+  margin-bottom: calc(var(--mui-spacing) * 2);
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+body.admin-dashboard .panel h3,
+body.staff-dashboard .panel h3,
+body.login-page .panel h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: 0.0075em;
+  color: var(--mui-text-primary);
+}
+
+body.admin-dashboard .panel > p,
+body.staff-dashboard .panel > p,
+body.login-page .panel > p {
+  margin: 0 0 calc(var(--mui-spacing) * 2);
+  color: var(--mui-text-secondary);
+  font-size: 0.875rem;
+}
+
+body.admin-dashboard .toolbar,
+body.staff-dashboard .toolbar,
+body.login-page .toolbar {
+  margin-bottom: calc(var(--mui-spacing) * 2);
+  gap: calc(var(--mui-spacing) * 1.5);
+}
+
+/* —— Buttons (contained / outlined / text) —— */
+body.admin-dashboard .button,
+body.staff-dashboard .button,
+body.login-page .button,
+body.admin-dashboard button.button,
+body.staff-dashboard button.button,
+body.login-page button.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
+  height: 36px;
+  padding: 6px 16px !important;
+  margin: 0;
+  border-radius: var(--mui-shape-radius) !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  color: var(--mui-primary-main) !important;
+  font-family: inherit !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.02857em !important;
+  line-height: 1.75 !important;
+  text-transform: uppercase !important;
+  text-decoration: none !important;
+  cursor: pointer;
+  transition:
+    background-color var(--mui-transition),
+    box-shadow var(--mui-transition),
+    border-color var(--mui-transition),
+    color var(--mui-transition);
+}
+
+/* Outlined (default Arcana .button) */
+body.admin-dashboard .button:not(.primary),
+body.staff-dashboard .button:not(.primary),
+body.login-page .button:not(.primary) {
+  border-color: rgba(2, 136, 209, 0.5) !important;
+  color: var(--mui-primary-main) !important;
+}
+
+body.admin-dashboard .button:not(.primary):hover,
+body.staff-dashboard .button:not(.primary):hover,
+body.login-page .button:not(.primary):hover {
+  background-color: var(--mui-action-selected) !important;
+  border-color: var(--mui-primary-main) !important;
+}
+
+/* Contained (.button.primary) */
+body.admin-dashboard .button.primary,
+body.staff-dashboard .button.primary,
+body.login-page .button.primary {
+  background-color: var(--mui-primary-main) !important;
+  background-image: none !important;
+  color: var(--mui-primary-contrast) !important;
+  border-color: var(--mui-primary-main) !important;
+  box-shadow: var(--mui-shadow-2) !important;
+}
+
+body.admin-dashboard .button.primary:hover,
+body.staff-dashboard .button.primary:hover,
+body.login-page .button.primary:hover {
+  background-color: var(--mui-primary-dark) !important;
+  box-shadow: var(--mui-shadow-4) !important;
+}
+
+body.admin-dashboard .button:disabled,
+body.staff-dashboard .button:disabled,
+body.login-page .button:disabled,
+body.admin-dashboard .button.primary:disabled,
+body.staff-dashboard .button.primary:disabled,
+body.login-page .button.primary:disabled {
+  color: var(--mui-text-disabled) !important;
+  background-color: rgba(0, 0, 0, 0.12) !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  cursor: default;
+}
+
+body.admin-dashboard ul.actions,
+body.staff-dashboard ul.actions,
+body.login-page ul.actions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--mui-spacing) * 1);
+}
+
+body.admin-dashboard ul.actions li,
+body.staff-dashboard ul.actions li,
+body.login-page ul.actions li {
+  margin: 0;
+  padding: 0;
+}
+
+/* —— Text fields (outlined) —— */
+body.admin-dashboard .form-grid label,
+body.staff-dashboard .form-grid label,
+body.login-page .form-grid label,
+body.admin-dashboard .search-fields label,
+body.staff-dashboard .search-fields label,
+body.login-page .search-fields label {
+  display: block;
+  margin: calc(var(--mui-spacing) * 1.5) 0 calc(var(--mui-spacing) * 0.5);
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.03333em;
+  color: var(--mui-text-secondary);
+  line-height: 1.66;
+}
+
+body.admin-dashboard .form-grid label:first-child,
+body.staff-dashboard .form-grid label:first-child,
+body.login-page .form-grid label:first-child {
+  margin-top: 0;
+}
+
+body.admin-dashboard .form-grid input,
+body.staff-dashboard .form-grid input,
+body.login-page .form-grid input,
+body.admin-dashboard .form-grid textarea,
+body.staff-dashboard .form-grid textarea,
+body.login-page .form-grid textarea,
+body.admin-dashboard .form-grid select,
+body.staff-dashboard .form-grid select,
+body.login-page .form-grid select,
+body.admin-dashboard .search-fields .search-input,
+body.staff-dashboard .search-fields .search-input,
+body.login-page .search-fields .search-input {
+  width: 100%;
+  height: 40px;
+  padding: 8.5px 14px;
+  margin: 0;
+  border: 1px solid rgba(0, 0, 0, 0.23) !important;
+  border-radius: var(--mui-shape-radius) !important;
+  background: var(--mui-bg-paper) !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  color: var(--mui-text-primary);
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.4375em;
+  letter-spacing: 0.00938em;
+  transition: border-color var(--mui-transition), box-shadow var(--mui-transition);
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+body.admin-dashboard .form-grid textarea,
+body.staff-dashboard .form-grid textarea,
+body.login-page .form-grid textarea {
+  height: auto;
+  min-height: 80px;
+  padding-top: 12px;
+  resize: vertical;
+}
+
+body.admin-dashboard .form-grid input:hover,
+body.staff-dashboard .form-grid input:hover,
+body.login-page .form-grid input:hover,
+body.admin-dashboard .form-grid textarea:hover,
+body.staff-dashboard .form-grid textarea:hover,
+body.login-page .form-grid textarea:hover,
+body.admin-dashboard .form-grid select:hover,
+body.staff-dashboard .form-grid select:hover,
+body.login-page .form-grid select:hover,
+body.admin-dashboard .search-fields .search-input:hover,
+body.staff-dashboard .search-fields .search-input:hover,
+body.login-page .search-fields .search-input:hover {
+  border-color: var(--mui-text-primary) !important;
+}
+
+body.admin-dashboard .form-grid input:focus,
+body.staff-dashboard .form-grid input:focus,
+body.login-page .form-grid input:focus,
+body.admin-dashboard .form-grid textarea:focus,
+body.staff-dashboard .form-grid textarea:focus,
+body.login-page .form-grid textarea:focus,
+body.admin-dashboard .form-grid select:focus,
+body.staff-dashboard .form-grid select:focus,
+body.login-page .form-grid select:focus,
+body.admin-dashboard .search-fields .search-input:focus,
+body.staff-dashboard .search-fields .search-input:focus,
+body.login-page .search-fields .search-input:focus {
+  outline: none;
+  border-color: var(--mui-primary-main) !important;
+  border-width: 2px !important;
+  padding: 7.5px 13px;
+  box-shadow: none !important;
+}
+
+body.admin-dashboard .form-grid textarea:focus,
+body.staff-dashboard .form-grid textarea:focus,
+body.login-page .form-grid textarea:focus {
+  padding-top: 11px;
+}
+
+body.admin-dashboard .search-fields,
+body.staff-dashboard .search-fields,
+body.login-page .search-fields {
+  gap: calc(var(--mui-spacing) * 2);
+  align-items: flex-end;
+}
+
+body.admin-dashboard .search-fields .search-input,
+body.staff-dashboard .search-fields .search-input,
+body.login-page .search-fields .search-input {
+  height: 40px;
+  line-height: 1.4375em;
+}
+
+body.admin-dashboard .search-form,
+body.staff-dashboard .search-form,
+body.login-page .search-form {
+  margin-bottom: calc(var(--mui-spacing) * 2);
+  padding: calc(var(--mui-spacing) * 2);
+  background: var(--mui-bg-default);
+  border-radius: var(--mui-shape-radius);
+}
+
+/* —— Table (MUI Table / Data display) —— */
+body.admin-dashboard .table-wrapper,
+body.staff-dashboard .table-wrapper,
+body.login-page .table-wrapper {
+  margin-bottom: calc(var(--mui-spacing) * 2);
+  border-radius: var(--mui-shape-radius);
+  box-shadow: var(--mui-shadow-1);
+  overflow: hidden;
+  background: var(--mui-bg-paper);
+}
+
+body.admin-dashboard table.patient-table,
+body.staff-dashboard table.patient-table,
+body.login-page table.patient-table {
+  border: none !important;
+  border-radius: 0 !important;
+  border-collapse: collapse;
+}
+
+body.admin-dashboard table.patient-table th,
+body.staff-dashboard table.patient-table th,
+body.login-page table.patient-table th {
+  padding: 16px;
+  background: var(--mui-bg-paper) !important;
+  border-bottom: 1px solid var(--mui-divider) !important;
+  color: var(--mui-text-secondary) !important;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.01071em;
+  line-height: 1.5;
+  text-align: left;
+}
+
+body.admin-dashboard table.patient-table td,
+body.staff-dashboard table.patient-table td,
+body.login-page table.patient-table td {
+  padding: 16px;
+  border-bottom: 1px solid var(--mui-divider);
+  color: var(--mui-text-primary);
+  font-size: 0.875rem;
+}
+
+body.admin-dashboard table.patient-table tbody tr:nth-child(even),
+body.staff-dashboard table.patient-table tbody tr:nth-child(even),
+body.login-page table.patient-table tbody tr:nth-child(even) {
+  background: transparent;
+}
+
+body.admin-dashboard table.patient-table tbody tr:hover,
+body.staff-dashboard table.patient-table tbody tr:hover,
+body.login-page table.patient-table tbody tr:hover {
+  background: var(--mui-action-hover);
+}
+
+body.admin-dashboard table.patient-table tbody tr:last-child td,
+body.staff-dashboard table.patient-table tbody tr:last-child td,
+body.login-page table.patient-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* —— IconButton —— */
+body.admin-dashboard .icon-action,
+body.staff-dashboard .icon-action,
+body.login-page .icon-action {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  border: none !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+  background-image: none !important;
+  color: var(--mui-text-secondary) !important;
+  box-shadow: none !important;
+  transition: background-color var(--mui-transition), color var(--mui-transition);
+}
+
+body.admin-dashboard .icon-action:hover,
+body.staff-dashboard .icon-action:hover,
+body.login-page .icon-action:hover,
+body.admin-dashboard .icon-action:focus,
+body.staff-dashboard .icon-action:focus,
+body.login-page .icon-action:focus {
+  background-color: var(--mui-action-hover) !important;
+  color: var(--mui-primary-main) !important;
+  transform: none;
+  box-shadow: none !important;
+  outline: none;
+}
+
+body.admin-dashboard .icon-action:active,
+body.staff-dashboard .icon-action:active,
+body.login-page .icon-action:active {
+  transform: none;
+  background-color: var(--mui-action-selected) !important;
+}
+
+body.admin-dashboard .icon-action-danger,
+body.staff-dashboard .icon-action-danger,
+body.login-page .icon-action-danger {
+  color: var(--mui-error-main) !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+body.admin-dashboard .icon-action-danger:hover,
+body.staff-dashboard .icon-action-danger:hover,
+body.login-page .icon-action-danger:hover,
+body.admin-dashboard .icon-action-danger:focus,
+body.staff-dashboard .icon-action-danger:focus,
+body.login-page .icon-action-danger:focus {
+  background-color: rgba(211, 47, 47, 0.08) !important;
+  color: var(--mui-error-dark, #c62828) !important;
+  box-shadow: none !important;
+}
+
+body.admin-dashboard .icon-action[data-tooltip]::after,
+body.staff-dashboard .icon-action[data-tooltip]::after,
+body.login-page .icon-action[data-tooltip]::after,
+body.admin-dashboard .pagination-arrow[data-tooltip]::after,
+body.staff-dashboard .pagination-arrow[data-tooltip]::after,
+body.login-page .pagination-arrow[data-tooltip]::after {
+  border-radius: var(--mui-shape-radius);
+  background: #616161;
+  font-weight: 500;
+  font-size: 0.625rem;
+  letter-spacing: 0.03333em;
+  text-transform: uppercase;
+  box-shadow: var(--mui-shadow-8);
+}
+
+body.admin-dashboard .icon-action[data-tooltip]::before,
+body.staff-dashboard .icon-action[data-tooltip]::before,
+body.login-page .icon-action[data-tooltip]::before,
+body.admin-dashboard .pagination-arrow[data-tooltip]::before,
+body.staff-dashboard .pagination-arrow[data-tooltip]::before,
+body.login-page .pagination-arrow[data-tooltip]::before {
+  border-top-color: #616161;
+}
+
+/* —— Pagination —— */
+body.admin-dashboard .pagination-bar,
+body.staff-dashboard .pagination-bar,
+body.login-page .pagination-bar {
+  padding: calc(var(--mui-spacing) * 1) 0;
+}
+
+body.admin-dashboard .pagination-bar #page-info,
+body.staff-dashboard .pagination-bar #page-info,
+body.login-page .pagination-bar #page-info {
+  font-size: 0.875rem;
+  color: var(--mui-text-secondary);
+}
+
+body.admin-dashboard .pagination-arrow,
+body.staff-dashboard .pagination-arrow,
+body.login-page .pagination-arrow {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  border: none !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+  background-image: none !important;
+  color: var(--mui-text-secondary) !important;
+  box-shadow: none !important;
+}
+
+body.admin-dashboard .pagination-arrow:hover:not(:disabled),
+body.staff-dashboard .pagination-arrow:hover:not(:disabled),
+body.login-page .pagination-arrow:hover:not(:disabled),
+body.admin-dashboard .pagination-arrow:focus:not(:disabled),
+body.staff-dashboard .pagination-arrow:focus:not(:disabled),
+body.login-page .pagination-arrow:focus:not(:disabled) {
+  background-color: var(--mui-action-hover) !important;
+  color: var(--mui-text-primary) !important;
+  transform: none;
+  box-shadow: none !important;
+}
+
+body.admin-dashboard .pagination-arrow:disabled,
+body.staff-dashboard .pagination-arrow:disabled,
+body.login-page .pagination-arrow:disabled {
+  color: var(--mui-text-disabled) !important;
+  background: transparent !important;
+  opacity: 1;
+}
+
+/* —— Dialog —— */
+body.admin-dashboard .modal-overlay,
+body.staff-dashboard .modal-overlay,
+body.login-page .modal-overlay {
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1300;
+}
+
+body.admin-dashboard .modal-dialog,
+body.staff-dashboard .modal-dialog,
+body.login-page .modal-dialog {
+  background: var(--mui-bg-paper);
+  border: none !important;
+  border-radius: var(--mui-shape-radius) !important;
+  box-shadow: var(--mui-shadow-24) !important;
+  padding: 0 !important;
+  max-width: 600px;
+  overflow: hidden;
+}
+
+body.admin-dashboard .modal-dialog-wide,
+body.staff-dashboard .modal-dialog-wide,
+body.login-page .modal-dialog-wide {
+  max-width: 720px;
+}
+
+body.admin-dashboard .modal-header,
+body.staff-dashboard .modal-header,
+body.login-page .modal-header {
+  margin: 0;
+  padding: 16px 24px;
+  padding-right: 48px;
+}
+
+body.admin-dashboard .modal-header h3,
+body.staff-dashboard .modal-header h3,
+body.login-page .modal-header h3,
+body.admin-dashboard .modal-header-row h3,
+body.staff-dashboard .modal-header-row h3,
+body.login-page .modal-header-row h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: 0.0075em;
+  line-height: 1.6;
+  color: var(--mui-text-primary) !important;
+}
+
+body.admin-dashboard .modal-subtitle,
+body.staff-dashboard .modal-subtitle,
+body.login-page .modal-subtitle {
+  margin: 4px 0 0;
+  font-size: 0.875rem;
+  color: var(--mui-text-secondary);
+  opacity: 1;
+}
+
+body.admin-dashboard .modal-body,
+body.staff-dashboard .modal-body,
+body.login-page .modal-body {
+  padding: 8px 24px 20px;
+}
+
+body.admin-dashboard .modal-close,
+body.staff-dashboard .modal-close,
+body.login-page .modal-close {
+  top: 8px;
+  right: 8px;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50% !important;
+  font-size: 1.5rem;
+  color: var(--mui-text-secondary) !important;
+  transition: background-color var(--mui-transition);
+}
+
+body.admin-dashboard .modal-close:hover,
+body.staff-dashboard .modal-close:hover,
+body.login-page .modal-close:hover {
+  background-color: var(--mui-action-hover) !important;
+  color: var(--mui-text-primary) !important;
+}
+
+body.admin-dashboard .modal-actions,
+body.staff-dashboard .modal-actions,
+body.login-page .modal-actions,
+body.admin-dashboard ul.actions.modal-actions,
+body.staff-dashboard ul.actions.modal-actions {
+  margin: 24px 0 0 !important;
+  padding-top: 16px;
+  border-top: 1px solid var(--mui-divider);
+  justify-content: flex-end;
+  width: 100%;
+}
+
+body.admin-dashboard .modal-section-title,
+body.staff-dashboard .modal-section-title,
+body.login-page .modal-section-title {
+  margin: calc(var(--mui-spacing) * 2) 0 calc(var(--mui-spacing) * 1);
+  padding-top: calc(var(--mui-spacing) * 1);
+  border-top: 1px solid var(--mui-divider);
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--mui-text-primary);
+}
+
+body.admin-dashboard .modal-header-row,
+body.staff-dashboard .modal-header-row,
+body.login-page .modal-header-row {
+  padding-right: 0;
+}
+
+body.admin-dashboard .history-list li,
+body.staff-dashboard .history-list li,
+body.login-page .history-list li {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--mui-divider);
+  font-size: 0.875rem;
+  color: var(--mui-text-primary);
+}
+
+/* Disabled fields (view mode) */
+body.staff-dashboard #view-patient-overlay .form-grid input:disabled,
+body.staff-dashboard #view-patient-overlay .form-grid textarea:disabled,
+body.staff-dashboard #view-patient-overlay .form-grid select:disabled {
+  background: rgba(0, 0, 0, 0.06) !important;
+  color: var(--mui-text-secondary);
+  border-color: transparent !important;
+  -webkit-text-fill-color: var(--mui-text-secondary);
+}
+
+/* —— Snackbar / Toast —— */
+body.staff-dashboard .toast-container {
+  bottom: 24px;
+  right: 24px;
+  left: auto;
+  max-width: 360px;
+}
+
+body.staff-dashboard .toast {
+  min-width: 288px;
+  padding: 6px 16px;
+  border-radius: var(--mui-shape-radius);
+  box-shadow: var(--mui-shadow-6, var(--mui-shadow-8));
+  border: none;
+  align-items: center;
+  font-family: inherit;
+}
+
+body.staff-dashboard .toast-message {
+  padding: 8px 0;
+  font-size: 0.875rem;
+  font-weight: 400;
+  letter-spacing: 0.01071em;
+}
+
+body.staff-dashboard .toast-success {
+  background: #323232;
+  color: #fff;
+}
+
+body.staff-dashboard .toast-error {
+  background: var(--mui-error-main);
+  color: #fff;
+}
+
+body.staff-dashboard .toast-close {
+  color: inherit !important;
+  width: 32px;
+  height: 32px;
+  border-radius: 50% !important;
+  opacity: 0.7;
+}
+
+body.staff-dashboard .toast-close:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  opacity: 1;
+}
+
+/* —— Mobile title bar (Arcana) —— */
+@media screen and (max-width: 840px) {
+  body.admin-dashboard #titleBar,
+  body.staff-dashboard #titleBar {
+    background-color: var(--mui-primary-main) !important;
+    background-image: none !important;
+    box-shadow: var(--mui-shadow-4);
+  }
+
+  body.admin-dashboard #navPanel,
+  body.staff-dashboard #navPanel {
+    background-color: var(--mui-bg-paper) !important;
+    background-image: none !important;
+    box-shadow: var(--mui-shadow-16);
+  }
+
+  body.admin-dashboard #navPanel .link,
+  body.staff-dashboard #navPanel .link {
+    color: var(--mui-text-primary) !important;
+    border-top-color: var(--mui-divider) !important;
+    font-family: inherit;
+  }
+
+  body.admin-dashboard #content > article,
+  body.staff-dashboard #content > article {
+    padding: calc(var(--mui-spacing) * 2) !important;
+  }
+
+  body.admin-dashboard .modal-dialog,
+  body.staff-dashboard .modal-dialog {
+    margin: 16px;
+    max-height: calc(100vh - 32px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.admin-dashboard *,
+  body.staff-dashboard *,
+  body.login-page *,
+  body.login-page * {
+    transition: none !important;
+  }
+}
+
+/* —— Login page —— */
+body.login-page .login-box {
+  max-width: 360px;
+  margin: 0 auto;
+  padding-top: calc(var(--mui-spacing) * 1);
+}
+
+body.login-page .login-box .actions {
+  margin-top: calc(var(--mui-spacing) * 3) !important;
+  justify-content: stretch;
+}
+
+body.login-page .login-box .actions li {
+  width: 100%;
+}
+
+body.login-page .login-box .actions .button.primary {
+  width: 100%;
+  min-width: 100%;
+  height: 42px;
+}
+
+body.login-page .login-hint {
+  margin-top: calc(var(--mui-spacing) * 3);
+  padding-top: calc(var(--mui-spacing) * 2);
+  border-top: 1px solid var(--mui-divider);
+  font-size: 0.75rem;
+  line-height: 1.66;
+  letter-spacing: 0.03333em;
+  color: var(--mui-text-secondary);
+  opacity: 1;
+}
+
+body.login-page #footer {
+  background: transparent !important;
+  background-image: none !important;
+  border-top: none !important;
+  padding: calc(var(--mui-spacing) * 2) 0 calc(var(--mui-spacing) * 4);
+}
+
+body.login-page #footer .copyright {
+  border-top: 1px solid var(--mui-divider);
+  padding-top: calc(var(--mui-spacing) * 2);
+  color: var(--mui-text-secondary);
+  font-size: 0.75rem;
+}
+
+body.login-page #footer .copyright a {
+  color: var(--mui-primary-main);
+  border: 0;
+  text-decoration: none;
+}
+
+body.login-page #footer .copyright a:hover {
+  text-decoration: underline;
+}
+
+body.login-page #footer .menu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--mui-spacing) * 2);
+  justify-content: center;
+}
+
+body.login-page #footer .menu li {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+body.login-page #nav > ul {
+  text-align: right;
+  padding-right: calc(var(--mui-spacing) * 2) !important;
+}
+
+body.login-page #nav > ul > li.current a {
+  color: #fff !important;
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+/* —— Admin CRUD dashboard shell (permanent Drawer) ——
+   Pattern from https://mui.com/material-ui/getting-started/templates/crud-dashboard/
+*/
+body:is(.admin-shell, .staff-shell) {
+  --drawer-width: 240px;
+  --appbar-height: 64px;
+}
+
+body:is(.admin-shell, .staff-shell) #page-wrapper.dashboard-shell {
+  display: flex;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: 0 !important;
+  margin: 0;
+  background: var(--mui-bg-default);
+}
+
+/* Hide Arcana mobile chrome on admin shell */
+body:is(.admin-shell, .staff-shell) #titleBar,
+body:is(.admin-shell, .staff-shell) #navPanel {
+  display: none !important;
+}
+
+body:is(.admin-shell, .staff-shell) .dashboard-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1200;
+  box-sizing: border-box;
+  width: var(--drawer-width);
+  height: 100vh;
+  height: 100svh;
+  display: flex;
+  flex-direction: column;
+  background: var(--mui-bg-paper);
+  border-right: 1px solid var(--mui-divider);
+  box-shadow: none;
+}
+
+body:is(.admin-shell, .staff-shell) .drawer-brand {
+  display: flex;
+  align-items: center;
+  min-height: var(--appbar-height);
+  padding: 0 16px;
+  border-bottom: 1px solid var(--mui-divider);
+}
+
+body:is(.admin-shell, .staff-shell) .drawer-logo {
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  line-height: 1.3;
+  color: var(--mui-text-primary);
+  text-decoration: none;
+  border: 0;
+}
+
+body:is(.admin-shell, .staff-shell) .drawer-logo em {
+  display: block;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 0.75rem;
+  color: var(--mui-text-secondary);
+}
+
+body:is(.admin-shell, .staff-shell) .drawer-nav {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+body:is(.admin-shell, .staff-shell) .drawer-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 8px;
+}
+
+body:is(.admin-shell, .staff-shell) .drawer-list li {
+  margin: 0 0 4px;
+  padding: 0;
+}
+
+body:is(.admin-shell, .staff-shell) .drawer-item,
+body:is(.admin-shell, .staff-shell) .tab-btn.drawer-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  margin: 0;
+  padding: 8px 16px !important;
+  border: none !important;
+  border-radius: var(--mui-shape-radius) !important;
+  border-bottom: none !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  color: var(--mui-text-primary) !important;
+  font-family: inherit !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.01em !important;
+  line-height: 1.43 !important;
+  text-transform: none !important;
+  text-align: left;
+  opacity: 1 !important;
+  cursor: pointer;
+  transition: background-color var(--mui-transition), color var(--mui-transition);
+}
+
+body:is(.admin-shell, .staff-shell) .drawer-item:hover,
+body:is(.admin-shell, .staff-shell) .tab-btn.drawer-item:hover {
+  background-color: var(--mui-action-hover) !important;
+  color: var(--mui-text-primary) !important;
+}
+
+body:is(.admin-shell, .staff-shell) .drawer-item.active,
+body:is(.admin-shell, .staff-shell) .tab-btn.drawer-item.active {
+  background-color: var(--mui-action-selected) !important;
+  color: var(--mui-primary-main) !important;
+  border-bottom: none !important;
+}
+
+body:is(.admin-shell, .staff-shell) .drawer-item-icon {
+  display: inline-flex;
+  width: 24px;
+  justify-content: center;
+  color: inherit;
+  opacity: 0.8;
+  font-size: 1rem;
+}
+
+body:is(.admin-shell, .staff-shell) .drawer-item.active .drawer-item-icon,
+body:is(.admin-shell, .staff-shell) .tab-btn.drawer-item.active .drawer-item-icon {
+  opacity: 1;
+  color: var(--mui-primary-main);
+}
+
+body:is(.admin-shell, .staff-shell) .drawer-item-text {
+  flex: 1 1 auto;
+}
+
+body:is(.admin-shell, .staff-shell) .drawer-footer {
+  flex: 0 0 auto;
+  padding: 8px;
+  border-top: 1px solid var(--mui-divider);
+}
+
+body:is(.admin-shell, .staff-shell) .drawer-logout {
+  color: var(--mui-text-secondary) !important;
+}
+
+body:is(.admin-shell, .staff-shell) .drawer-logout:hover {
+  color: var(--mui-error-main) !important;
+  background-color: rgba(211, 47, 47, 0.08) !important;
+}
+
+body:is(.admin-shell, .staff-shell) .drawer-backdrop {
+  display: none;
+}
+
+body:is(.admin-shell, .staff-shell) .dashboard-main {
+  flex: 1 1 auto;
+  margin-left: var(--drawer-width);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+body:is(.admin-shell, .staff-shell) .dashboard-appbar {
+  position: sticky;
+  top: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: var(--appbar-height);
+  padding: 0 24px;
+  background: var(--mui-primary-main);
+  color: var(--mui-primary-contrast);
+  box-shadow: var(--mui-shadow-4);
+}
+
+body:is(.admin-shell, .staff-shell) .drawer-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+body:is(.admin-shell, .staff-shell) .drawer-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+body:is(.admin-shell, .staff-shell) .appbar-titles {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+body:is(.admin-shell, .staff-shell) .appbar-page-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: 0.0075em;
+  line-height: 1.6;
+  color: inherit;
+}
+
+body:is(.admin-shell, .staff-shell) .appbar-meta {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+body:is(.admin-shell, .staff-shell) .appbar-meta .badge {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+
+body:is(.admin-shell, .staff-shell) .dashboard-content {
+  flex: 1 1 auto;
+  padding: 24px;
+}
+
+/*
+ * Dashboard Paper — MUI Container-style fluid width
+ * Caps at 1150px on large screens; width 100% below that.
+ * @see https://mui.com/material-ui/react-container/
+ */
+body:is(.admin-shell, .staff-shell) .mui-paper.dashboard-paper,
+body:is(.admin-shell, .staff-shell) #content > article.dashboard-paper {
+  width: 100%;
+  max-width: 1150px;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+  padding: 24px !important;
+  background: var(--mui-bg-paper) !important;
+  border: none !important;
+  border-radius: var(--mui-shape-radius) !important;
+  box-shadow: var(--mui-shadow-1) !important;
+}
+
+@media screen and (max-width: 899.95px) {
+  body:is(.admin-shell, .staff-shell) .mui-paper.dashboard-paper,
+  body:is(.admin-shell, .staff-shell) #content > article.dashboard-paper {
+    padding: 16px !important;
+  }
+}
+
+body:is(.admin-shell, .staff-shell) .toolbar {
+  justify-content: flex-end;
+}
+
+/*
+ * Clinic form: MUI Container (maxWidth="sm" = 600px) + Paper
+ * @see https://mui.com/material-ui/react-container/
+ * @see https://mui.com/material-ui/react-paper/
+ */
+body:is(.admin-shell, .staff-shell) .panel-intro {
+  margin: 0 0 16px;
+  color: var(--mui-text-secondary);
+  font-size: 0.875rem;
+}
+
+body:is(.admin-shell, .staff-shell) .mui-container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+}
+
+body:is(.admin-shell, .staff-shell) .mui-container--sm {
+  max-width: 600px; /* MUI Container maxWidth="sm" */
+}
+
+body:is(.admin-shell, .staff-shell) .mui-form-paper {
+  padding: 24px;
+  background: var(--mui-bg-paper);
+  border: 1px solid var(--mui-divider);
+  border-radius: var(--mui-shape-radius);
+  box-shadow: var(--mui-shadow-1);
+}
+
+body:is(.admin-shell, .staff-shell) .mui-form-paper .form-grid > label:first-child {
+  margin-top: 0;
+}
+
+body:is(.admin-shell, .staff-shell) .form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px; /* MUI Grid spacing={2} */
+  margin-top: 0;
+}
+
+body:is(.admin-shell, .staff-shell) .form-row--2 > .form-field {
+  flex: 1 1 calc(50% - 8px);
+  min-width: 140px;
+}
+
+body:is(.admin-shell, .staff-shell) .form-row .form-field label {
+  margin-top: calc(var(--mui-spacing) * 1.5);
+}
+
+body:is(.admin-shell, .staff-shell) .form-actions {
+  margin-top: 24px !important;
+}
+
+@media screen and (max-width: 600px) {
+  body:is(.admin-shell, .staff-shell) .mui-form-paper {
+    padding: 16px;
+  }
+
+  body:is(.admin-shell, .staff-shell) .form-row--2 > .form-field {
+    flex: 1 1 100%;
+  }
+}
+
+body:is(.admin-shell, .staff-shell) .dashboard-tabs .tab-list {
+  display: none;
+}
+
+@media screen and (max-width: 900px) {
+  body:is(.admin-shell, .staff-shell) .dashboard-drawer {
+    transform: translateX(-105%);
+    transition: transform 225ms cubic-bezier(0, 0, 0.2, 1);
+    box-shadow: var(--mui-shadow-16);
+  }
+
+  body:is(.admin-shell, .staff-shell) .dashboard-drawer.is-open {
+    transform: translateX(0);
+  }
+
+  body:is(.admin-shell, .staff-shell) .drawer-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 1190;
+    background: rgba(0, 0, 0, 0.5);
+  }
+
+  body:is(.admin-shell, .staff-shell) .drawer-backdrop[hidden] {
+    display: none !important;
+  }
+
+  body:is(.admin-shell, .staff-shell) .dashboard-main {
+    margin-left: 0;
+  }
+
+  body:is(.admin-shell, .staff-shell) .drawer-toggle {
+    display: inline-flex;
+  }
+
+  body:is(.admin-shell, .staff-shell) .dashboard-content {
+    padding: 16px;
+  }
+
+  body:is(.admin-shell, .staff-shell) .dashboard-appbar {
+    padding: 0 12px;
+  }
+}

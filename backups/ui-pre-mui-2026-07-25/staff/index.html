@@ -8,124 +8,89 @@
 		<title>Staff Dashboard — Dental Clinic</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-		<link rel="preconnect" href="https://fonts.googleapis.com" />
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-		<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
 		<link rel="stylesheet" href="../assets/css/main.css" />
-		<link rel="stylesheet" href="../assets/css/fontawesome-all.min.css" />
 		<link rel="stylesheet" href="../css/app.css" />
-		<link rel="stylesheet" href="../css/mui-portal.css" />
 	</head>
-	<body class="is-preload staff-dashboard staff-shell">
-		<div id="page-wrapper" class="dashboard-shell">
+	<body class="is-preload staff-dashboard">
+		<div id="page-wrapper">
 
-			<!-- Permanent left Drawer (MUI CRUD dashboard pattern) -->
-			<aside id="staff-drawer" class="dashboard-drawer" aria-label="Staff navigation">
-				<div class="drawer-brand">
-					<a href="../index.html" id="logo" class="drawer-logo">Bright Smile <em>Dental Clinic</em></a>
-				</div>
-
-				<nav class="drawer-nav" aria-label="Staff sections">
-					<ul class="drawer-list">
-						<li>
-							<button type="button" class="drawer-item active" aria-current="page">
-								<span class="drawer-item-icon" aria-hidden="true"><i class="fas fa-users"></i></span>
-								<span class="drawer-item-text">Patients</span>
-							</button>
-						</li>
+			<div id="header">
+				<h1><a href="../index.html" id="logo">Bright Smile <em>Dental Clinic</em></a></h1>
+				<nav id="nav">
+					<ul>
+						<li><a href="#" id="logout-btn" data-testid="logout-btn">Logout</a></li>
 					</ul>
 				</nav>
+			</div>
 
-				<div class="drawer-footer">
-					<button type="button" class="drawer-item drawer-logout" id="logout-btn" data-testid="logout-btn">
-						<span class="drawer-item-icon" aria-hidden="true"><i class="fas fa-sign-out-alt"></i></span>
-						<span class="drawer-item-text">Logout</span>
-					</button>
-				</div>
-			</aside>
+			<section class="wrapper style1">
+				<div class="container">
+					<div id="content">
+						<article>
+							<header>
+								<h2>Staff Dashboard</h2>
+								<p>
+									<span id="user-greeting" data-testid="user-greeting"></span>
+									<span id="user-role" class="badge"></span>
+								</p>
+							</header>
 
-			<div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+							<div id="staff-alert" class="alert" hidden data-testid="staff-alert"></div>
 
-			<div class="dashboard-main">
-				<header class="dashboard-appbar" role="banner">
-					<button type="button" class="drawer-toggle" id="drawer-toggle" aria-label="Open navigation menu" aria-controls="staff-drawer" aria-expanded="false">
-						<i class="fas fa-bars" aria-hidden="true"></i>
-					</button>
-					<div class="appbar-titles">
-						<h1 class="appbar-page-title" id="page-section-title">Patients</h1>
-						<p class="appbar-meta">
-							<span id="user-greeting" data-testid="user-greeting"></span>
-							<span id="user-role" class="badge"></span>
-						</p>
-					</div>
-				</header>
-
-				<main class="dashboard-content" id="content">
-					<article class="mui-paper dashboard-paper">
-						<div id="staff-alert" class="alert" hidden data-testid="staff-alert"></div>
-
-						<div class="panel">
-							<div class="toolbar">
-								<ul class="actions">
-									<li><button type="button" class="button primary" id="add-patient-btn" data-testid="add-patient">+ Patient</button></li>
-								</ul>
-							</div>
-
-							<form id="patient-search-form" class="search-form" data-testid="patient-search" action="#" method="get">
-								<div class="search-fields">
-									<div>
-										<label for="search-name">Search by name</label>
-										<input type="text" id="search-name" class="search-input" data-testid="search-name" placeholder="First or last name" />
-									</div>
-									<div>
-										<label for="search-dob">Date of birth</label>
-										<input type="text" id="search-dob" class="search-input" data-testid="search-dob" placeholder="dd/mm/yyyy" inputmode="numeric" />
-									</div>
+							<div class="panel">
+								<div class="toolbar">
+									<h3>Patients</h3>
 									<ul class="actions">
-										<li><button type="submit" class="button" data-testid="search-patients">Search</button></li>
-										<li><button type="button" class="button" id="clear-search-btn" data-testid="clear-search">Clear</button></li>
+										<li><button type="button" class="button primary" id="add-patient-btn" data-testid="add-patient">Add Patient</button></li>
 									</ul>
 								</div>
-							</form>
 
-							<div class="table-wrapper">
-								<table class="patient-table" id="patient-table" data-testid="patient-table">
-									<thead>
-										<tr>
-											<th class="col-name">Name</th>
-											<th class="col-dob">Date of Birth</th>
-											<th class="col-phone">Phone</th>
-											<th class="col-email">Email</th>
-											<th class="col-actions" aria-label="Actions"></th>
-										</tr>
-									</thead>
-									<tbody></tbody>
-								</table>
-							</div>
+								<form id="patient-search-form" class="search-form" data-testid="patient-search" action="#" method="get">
+									<div class="search-fields">
+										<div>
+											<label for="search-name">Search by name</label>
+											<input type="text" id="search-name" class="search-input" data-testid="search-name" placeholder="First or last name" />
+										</div>
+										<div>
+											<label for="search-dob">Date of birth</label>
+											<input type="text" id="search-dob" class="search-input" data-testid="search-dob" placeholder="dd/mm/yyyy" inputmode="numeric" />
+										</div>
+										<ul class="actions">
+											<li><button type="submit" class="button" data-testid="search-patients">Search</button></li>
+											<li><button type="button" class="button" id="clear-search-btn" data-testid="clear-search">Clear</button></li>
+										</ul>
+									</div>
+								</form>
 
-							<div class="pagination-bar" id="patient-pagination" data-testid="patient-pagination">
-								<div class="pagination-controls">
-									<button type="button" class="pagination-arrow" id="first-page" data-testid="first-page" aria-label="First page" data-tooltip="First" disabled>
-										<i class="fas fa-angle-double-left" aria-hidden="true"></i>
-									</button>
+								<div class="table-wrapper">
+									<table class="patient-table" id="patient-table" data-testid="patient-table">
+										<thead>
+											<tr>
+												<th class="col-name">Name</th>
+												<th class="col-dob">Date of Birth</th>
+												<th class="col-phone">Phone</th>
+												<th class="col-email">Email</th>
+												<th class="col-actions">Actions</th>
+											</tr>
+										</thead>
+										<tbody></tbody>
+									</table>
+								</div>
+
+								<div class="pagination-bar" id="patient-pagination" data-testid="patient-pagination">
 									<button type="button" class="pagination-arrow" id="prev-page" data-testid="prev-page" aria-label="Previous page" data-tooltip="Previous" disabled>
 										<i class="fas fa-chevron-left" aria-hidden="true"></i>
 									</button>
-								</div>
-								<span id="page-info" data-testid="page-info"></span>
-								<div class="pagination-controls">
+									<span id="page-info" data-testid="page-info"></span>
 									<button type="button" class="pagination-arrow" id="next-page" data-testid="next-page" aria-label="Next page" data-tooltip="Next" disabled>
 										<i class="fas fa-chevron-right" aria-hidden="true"></i>
 									</button>
-									<button type="button" class="pagination-arrow" id="last-page" data-testid="last-page" aria-label="Last page" data-tooltip="Last" disabled>
-										<i class="fas fa-angle-double-right" aria-hidden="true"></i>
-									</button>
 								</div>
 							</div>
-						</div>
-					</article>
-				</main>
-			</div>
+						</article>
+					</div>
+				</div>
+			</section>
 
 		</div>
 

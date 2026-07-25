@@ -47,15 +47,21 @@ adminTest.describe('Admin dashboard', () => {
     });
   });
 
-  adminTest('Verify that as an admin, I can switch between clinic and patients tabs', async ({ adminPage }) => {
+  adminTest('Verify that as an admin, I can switch between clinic and patients sidebar sections', async ({ adminPage }) => {
+    await expect(adminPage.drawer).toBeVisible();
+    await expect(adminPage.logoutButton).toBeVisible();
+    await expect(adminPage.pageSectionTitle).toHaveText('Clinic Information');
     await expect(adminPage.clinicPanel).toBeVisible();
     await expect(adminPage.clinicForm).toBeVisible();
 
     await adminPage.showPatientsTab();
+    await expect(adminPage.pageSectionTitle).toHaveText('Patients');
     await expect(adminPage.patientsPanel).toBeVisible();
     await expect(adminPage.patientTable.table).toBeVisible();
+    await expect(adminPage.addPatientButton).toHaveText('+ Patient');
 
     await adminPage.showClinicTab();
+    await expect(adminPage.pageSectionTitle).toHaveText('Clinic Information');
     await expect(adminPage.clinicPanel).toBeVisible();
   });
 
@@ -112,12 +118,24 @@ adminTest.describe('Admin dashboard', () => {
     );
 
     await expect(adminPage.patientPagination.pageInfo).toContainText(/Page 1 of/i);
+    await expect(adminPage.patientPagination.firstButton).toBeDisabled();
+    await expect(adminPage.patientPagination.prevButton).toBeDisabled();
+    await expect(adminPage.patientPagination.nextButton).toBeEnabled();
+    await expect(adminPage.patientPagination.lastButton).toBeEnabled();
 
     await adminPage.patientPagination.goToNextPage();
     await expect(adminPage.patientPagination.pageInfo).toContainText(/Page 2 of/i);
 
-    await adminPage.patientPagination.goToPreviousPage();
+    await adminPage.patientPagination.goToLastPage();
+    const totalPages = await adminPage.patientPagination.totalPages();
+    await expect(adminPage.patientPagination.pageInfo).toContainText(new RegExp(`Page ${totalPages} of`, 'i'));
+    await expect(adminPage.patientPagination.nextButton).toBeDisabled();
+    await expect(adminPage.patientPagination.lastButton).toBeDisabled();
+
+    await adminPage.patientPagination.goToFirstPage();
     await expect(adminPage.patientPagination.pageInfo).toContainText(/Page 1 of/i);
+    await expect(adminPage.patientPagination.firstButton).toBeDisabled();
+    await expect(adminPage.patientPagination.prevButton).toBeDisabled();
   });
 
   adminTest('Verify that as an admin, I can update clinic contact info on the public site', async ({ adminPage, page }) => {
