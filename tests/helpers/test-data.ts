@@ -1,5 +1,16 @@
+import path from 'node:path';
 import { faker } from '@faker-js/faker';
-import type { ClinicFormData, PatientFormData, VisitHistoryFormData } from '../models';
+import type { ClinicFormData, DoctorFormData, PatientFormData, VisitHistoryFormData } from '../models';
+
+/**
+ * Seeded doctor display names from `supabase/seed.sql`.
+ * Tests must never delete these rows — only doctors created in the test.
+ */
+export const SEED_DOCTOR_NAMES = [
+  'Dr. Emily Smith',
+  'Dr. James Park',
+  'Dr. Sarah Nguyen'
+] as const;
 
 const DENTAL_PROCEDURES = [
   'Checkup',
@@ -111,6 +122,8 @@ export function buildPatient(overrides: Partial<PatientFormData> = {}): PatientF
 
 /**
  * Builds visit history form data with random defaults.
+ * Dentist is omitted by default — the staff form uses a doctors dropdown.
+ * Pass `dentist` as an exact doctor name from the list when needed.
  * Pass fields in `overrides` to replace specific values.
  */
 export function buildVisitHistory(overrides: Partial<VisitHistoryFormData> = {}): VisitHistoryFormData {
@@ -118,7 +131,6 @@ export function buildVisitHistory(overrides: Partial<VisitHistoryFormData> = {})
     visitDate: recentVisitDate(),
     procedure: faker.helpers.arrayElement(DENTAL_PROCEDURES),
     description: 'Routine follow-up visit.',
-    dentist: `Dr. ${faker.person.lastName()}`,
     ...overrides
   };
 }
@@ -136,4 +148,46 @@ export function buildClinicUpdate(overrides: Partial<ClinicFormData> = {}): Clin
     hours: 'Mon–Fri 8:00–17:00',
     ...overrides
   };
+}
+
+/**
+ * Absolute path to a doctor avatar PNG under `tests/fixtures/doctors/`.
+ * @param filename - File name such as `dr-emily-smith-solo.png`.
+ * @returns Absolute filesystem path for Playwright `setInputFiles`.
+ */
+export function doctorFixturePath(filename: string): string {
+  return path.join(process.cwd(), 'tests', 'fixtures', 'doctors', filename);
+}
+
+/**
+ * Builds doctor form data with a unique name that will not match seed doctors.
+ * Pass fields in `overrides` to replace specific values.
+ * @param overrides - Optional field replacements.
+ */
+export function buildDoctor(overrides: Partial<DoctorFormData> = {}): DoctorFormData {
+  const unique = faker.string.alphanumeric(6).toLowerCase();
+  return {
+    name: `Dr. ${faker.person.firstName()} ${faker.person.lastName()} ${unique}`,
+    description: faker.lorem.sentence(),
+    ...overrides
+  };
+}
+
+/**
+ * Maps form data to the Supabase REST API doctor shape (no file upload).
+ * @param data - Doctor form fields.
+ */
+export function toApiDoctor(data: DoctorFormData) {
+  return {
+    name: data.name,
+    description: data.description ?? null
+  };
+}
+
+/**
+ * True when `name` matches a seeded doctor from {@link SEED_DOCTOR_NAMES}.
+ * @param name - Doctor display name to check.
+ */
+export function isSeedDoctorName(name: string): boolean {
+  return (SEED_DOCTOR_NAMES as readonly string[]).includes(name);
 }

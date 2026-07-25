@@ -10,8 +10,13 @@ import {
   supabaseHeaders,
   supabaseUrl
 } from '../helpers/supabase';
-import { buildPatient } from '../helpers/test-data';
+import { buildDoctor, buildPatient, SEED_DOCTOR_NAMES } from '../helpers/test-data';
 import { createPatientViaApi, deletePatientViaApi, getStaffAccessToken } from '../helpers/patients-api';
+import {
+  createDoctorViaApi,
+  deleteDoctorViaApi,
+  findDoctorIdByName
+} from '../helpers/doctors-api';
 
 test.describe('Clinic API', () => {
   test.beforeEach(() => {
@@ -83,6 +88,96 @@ test.describe('Patients API', () => {
     expect(await verifyRes.json()).toHaveLength(1);
 
     await deletePatientViaApi(request, id);
+  });
+});
+
+test.describe('Doctors API', () => {
+  test.beforeEach(() => {
+    test.skip(!requireSupabaseEnv() || supabaseUrl.includes('YOUR_PROJECT'), 'Set SUPABASE_URL and SUPABASE_ANON_KEY in .env');
+  });
+
+  test('GET doctors is public and includes seed doctors', async ({ request }) => {
+    const res = await request.get(`${supabaseUrl}/rest/v1/doctors?select=id,name&order=name`, {
+      headers: { apikey: supabaseAnonKey }
+    });
+
+    expect(res.ok()).toBeTruthy();
+    const doctors = (await res.json()) as { id: string; name: string }[];
+    expect(doctors.length).toBeGreaterThanOrEqual(SEED_DOCTOR_NAMES.length);
+
+    const names = doctors.map((d) => d.name);
+    for (const seedName of SEED_DOCTOR_NAMES) {
+      expect(names).toContain(seedName);
+    }
+  });
+
+  test('admin can create, update, and delete a doctor without removing seed doctors', async ({ request }) => {
+    test.skip(!hasAdminCredentials(), 'Set ADMIN_PASSWORD in .env');
+
+    const doctor = buildDoctor();
+    const { id, data } = await createDoctorViaApi(request, doctor);
+    expect(data.name).toBe(doctor.name);
+
+    const { email, password } = requireCredentials('admin');
+    const adminToken = await getAccessToken(email, password);
+    const updatedDescription = 'Updated via Playwright API test.';
+
+    const updateRes = await request.patch(`${supabaseUrl}/rest/v1/doctors?id=eq.${id}`, {
+      headers: {
+        ...supabaseHeaders(adminToken),
+        Prefer: 'return=representation'
+      },
+      data: { description: updatedDescription }
+    });
+    expect(updateRes.ok()).toBeTruthy();
+    const [updated] = await updateRes.json();
+    expect(updated.description).toBe(updatedDescription);
+
+    await deleteDoctorViaApi(request, id, adminToken);
+
+    const gone = await findDoctorIdByName(request, doctor.name, adminToken);
+    expect(gone).toBeNull();
+
+    for (const seedName of SEED_DOCTOR_NAMES) {
+      const seedId = await findDoctorIdByName(request, seedName, adminToken);
+      expect(seedId).toBeTruthy();
+    }
+  });
+
+  test('staff cannot create or delete doctors via REST', async ({ request }) => {
+    test.skip(!staffPassword, 'Set STAFF_PASSWORD in .env');
+    test.skip(!hasAdminCredentials(), 'Set ADMIN_PASSWORD in .env for cleanup and seed checks');
+
+    const staffToken = await getStaffAccessToken();
+    const doctor = buildDoctor();
+
+    const createRes = await request.post(`${supabaseUrl}/rest/v1/doctors`, {
+      headers: {
+        ...supabaseHeaders(staffToken),
+        Prefer: 'return=representation'
+      },
+      data: { name: doctor.name, description: doctor.description ?? null }
+    });
+
+    // PostgREST may return 201 with [] or an error when RLS blocks insert.
+    if (createRes.ok()) {
+      expect(await createRes.json()).toEqual([]);
+    } else {
+      expect(createRes.status()).toBeGreaterThanOrEqual(400);
+    }
+
+    expect(await findDoctorIdByName(request, doctor.name)).toBeNull();
+
+    const seedId = await findDoctorIdByName(request, SEED_DOCTOR_NAMES[0]);
+    expect(seedId).toBeTruthy();
+
+    const deleteRes = await request.delete(`${supabaseUrl}/rest/v1/doctors?id=eq.${seedId}`, {
+      headers: supabaseHeaders(staffToken)
+    });
+    expect(deleteRes.status()).toBeLessThan(300);
+
+    const stillThere = await findDoctorIdByName(request, SEED_DOCTOR_NAMES[0]);
+    expect(stillThere).toBe(seedId);
   });
 });
 

@@ -1,8 +1,10 @@
 import { expect, type Locator, type Page } from '@playwright/test';
-import type { ClinicFormData, PatientFormData } from '../models';
-import { searchQueryFromRowLabel } from '../helpers/test-data';
+import type { ClinicFormData, DoctorFormData, PatientFormData } from '../models';
+import { isSeedDoctorName, searchQueryFromRowLabel } from '../helpers/test-data';
 import { BasePage } from './base.page';
 import { LoginPage } from './login.page';
+import { DoctorFormComponent } from './components/doctor-form.component';
+import { DoctorTableComponent } from './components/doctor-table.component';
 import { PatientFormComponent } from './components/patient-form.component';
 import { PatientPaginationComponent } from './components/patient-pagination.component';
 import { PatientSearchComponent } from './components/patient-search.component';
@@ -21,6 +23,10 @@ export class AdminDashboardPage extends BasePage {
   readonly patientSearch: PatientSearchComponent;
   /** Shared add/edit patient form (overlay). */
   readonly patientForm: PatientFormComponent;
+  /** Doctor list table on the Doctors tab. */
+  readonly doctorTable: DoctorTableComponent;
+  /** Shared add/edit doctor form (overlay). */
+  readonly doctorForm: DoctorFormComponent;
 
   /**
    * @param page - Playwright page for this page object.
@@ -31,6 +37,8 @@ export class AdminDashboardPage extends BasePage {
     this.patientPagination = new PatientPaginationComponent(page);
     this.patientForm = new PatientFormComponent(page);
     this.patientSearch = new PatientSearchComponent(page, this.patientsPanel);
+    this.doctorTable = new DoctorTableComponent(page);
+    this.doctorForm = new DoctorFormComponent(page);
   }
 
   /** Logout control in the admin sidebar drawer. */
@@ -88,6 +96,16 @@ export class AdminDashboardPage extends BasePage {
     return this.page.getByTestId('tab-panel-patients');
   }
 
+  /** Doctors sidebar control. */
+  get doctorsTab(): Locator {
+    return this.page.getByTestId('tab-doctors');
+  }
+
+  /** Doctors tab panel. */
+  get doctorsPanel(): Locator {
+    return this.page.getByTestId('tab-panel-doctors');
+  }
+
   /** Clinic profile form. */
   get clinicForm(): Locator {
     return this.page.getByTestId('clinic-form');
@@ -127,14 +145,29 @@ export class AdminDashboardPage extends BasePage {
     return this.patientsPanel.getByTestId('add-patient');
   }
 
+  /** Opens the add-doctor overlay (Doctors tab). */
+  get addDoctorButton(): Locator {
+    return this.doctorsPanel.getByTestId('add-doctor');
+  }
+
   /** Add/edit patient modal overlay. */
   get patientFormOverlay(): Locator {
     return this.page.getByTestId('patient-form-overlay');
   }
 
+  /** Add/edit doctor modal overlay. */
+  get doctorFormOverlay(): Locator {
+    return this.page.getByTestId('doctor-form-overlay');
+  }
+
   /** Closes the patient form overlay. */
   get closePatientOverlayButton(): Locator {
     return this.page.getByTestId('close-patient-overlay');
+  }
+
+  /** Closes the doctor form overlay. */
+  get closeDoctorOverlayButton(): Locator {
+    return this.page.getByTestId('close-doctor-overlay');
   }
 
   /** Opens the admin dashboard (expects an authenticated admin session). */
@@ -171,6 +204,16 @@ export class AdminDashboardPage extends BasePage {
       await this.patientsTab.click();
     }
     await this.patientsPanel.waitFor({ state: 'visible', timeout: 15_000 });
+  }
+
+  /** Selects the Doctors sidebar section (no-op if already selected) and waits for the panel. */
+  async showDoctorsTab(): Promise<void> {
+    const selected = await this.doctorsTab.getAttribute('aria-selected');
+    if (selected !== 'true') {
+      await this.doctorsTab.click();
+    }
+    await this.doctorsPanel.waitFor({ state: 'visible', timeout: 15_000 });
+    await this.doctorTable.table.waitFor({ state: 'visible', timeout: 15_000 });
   }
 
   /** Waits until the clinic name field is visible and populated from the API. */
@@ -290,5 +333,66 @@ export class AdminDashboardPage extends BasePage {
     await this.patientTable.rowByName(name).first().waitFor({ state: 'visible', timeout: 10_000 });
     this.page.once('dialog', (dialog) => dialog.accept());
     await this.patientTable.clickDeleteForPatient(name);
+  }
+
+  /** Opens the Doctors tab and the add-doctor overlay. */
+  async openAddDoctorModal(): Promise<void> {
+    await this.showDoctorsTab();
+    await this.addDoctorButton.click();
+    await this.doctorFormOverlay.waitFor({ state: 'visible' });
+  }
+
+  /**
+   * Opens the add-doctor modal, fills the form (optional photo), and submits.
+   * @param data - Doctor fields to create.
+   */
+  async addDoctor(data: DoctorFormData): Promise<void> {
+    await this.openAddDoctorModal();
+    await this.doctorForm.fillAndSubmit(data);
+  }
+
+  /** Closes the add/edit doctor overlay. */
+  async closeDoctorModal(): Promise<void> {
+    await this.closeDoctorOverlayButton.click();
+  }
+
+  /**
+   * Finds a doctor by display name, opens edit, applies partial fields, and saves.
+   * @param name - Exact doctor display name shown in the table.
+   * @param data - Fields to change; omitted keys are left unchanged.
+   */
+  async editDoctor(name: string, data: Partial<DoctorFormData>): Promise<void> {
+    await this.showDoctorsTab();
+    await this.doctorTable.rowByName(name).first().waitFor({ state: 'visible', timeout: 10_000 });
+    await this.doctorTable.clickEditForDoctor(name);
+    await this.doctorFormOverlay.waitFor({ state: 'visible' });
+
+    if (data.name !== undefined) {
+      await this.doctorForm.nameInput.fill(data.name);
+    }
+    if (data.description !== undefined) {
+      await this.doctorForm.descriptionInput.fill(data.description);
+    }
+    if (data.profilePicturePath !== undefined) {
+      await this.doctorForm.photoInput.setInputFiles(data.profilePicturePath);
+    }
+
+    await this.doctorForm.submit();
+  }
+
+  /**
+   * Finds a doctor by display name and confirms the browser delete dialog.
+   * Refuses to delete seed doctors from `supabase/seed.sql`.
+   * @param name - Exact doctor display name shown in the table.
+   * @throws When `name` matches a seeded doctor.
+   */
+  async deleteDoctor(name: string): Promise<void> {
+    if (isSeedDoctorName(name)) {
+      throw new Error(`Refusing to delete seed doctor "${name}"`);
+    }
+    await this.showDoctorsTab();
+    await this.doctorTable.rowByName(name).first().waitFor({ state: 'visible', timeout: 10_000 });
+    this.page.once('dialog', (dialog) => dialog.accept());
+    await this.doctorTable.clickDeleteForDoctor(name);
   }
 }

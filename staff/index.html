@@ -180,26 +180,48 @@
 					<p id="add-visit-patient-name" class="modal-subtitle"></p>
 				</div>
 				<div class="modal-body">
-					<form id="history-form" class="form-grid" data-testid="history-form">
-						<label>Visit Date</label>
-						<input type="date" name="visit_date" required data-testid="history-date" />
-						<label>Procedure Type</label>
-						<select name="procedure_type" required data-testid="history-procedure">
-							<option value="Checkup">Checkup</option>
-							<option value="Cleaning">Cleaning</option>
-							<option value="Filling">Filling</option>
-							<option value="Extraction">Extraction</option>
-							<option value="Root Canal">Root Canal</option>
-							<option value="Crown">Crown</option>
-							<option value="X-Ray">X-Ray</option>
-							<option value="Other">Other</option>
-						</select>
-						<label>Description</label>
-						<input type="text" name="description" data-testid="history-description" />
-						<label>Dentist</label>
-						<input type="text" name="dentist_name" data-testid="history-dentist" />
-						<label>Notes</label>
-						<textarea name="history_notes" rows="2"></textarea>
+					<form id="history-form" class="form-grid" data-testid="history-form" novalidate>
+						<div class="form-field" data-field="visit_date">
+							<label for="history-date">Visit Date</label>
+							<input type="date" id="history-date" name="visit_date" required data-testid="history-date" aria-describedby="history-date-error" />
+							<p id="history-date-error" class="field-error" hidden data-testid="history-date-error"></p>
+						</div>
+
+						<div class="form-field" data-field="procedure_type">
+							<label for="history-procedure">Procedure Type</label>
+							<select id="history-procedure" name="procedure_type" required data-testid="history-procedure" aria-describedby="history-procedure-error">
+								<option value="">Select a procedure</option>
+								<option value="Checkup">Checkup</option>
+								<option value="Cleaning">Cleaning</option>
+								<option value="Filling">Filling</option>
+								<option value="Extraction">Extraction</option>
+								<option value="Root Canal">Root Canal</option>
+								<option value="Crown">Crown</option>
+								<option value="X-Ray">X-Ray</option>
+								<option value="Other">Other</option>
+							</select>
+							<p id="history-procedure-error" class="field-error" hidden data-testid="history-procedure-error"></p>
+						</div>
+
+						<div class="form-field" data-field="description">
+							<label for="history-description">Description</label>
+							<input type="text" id="history-description" name="description" required data-testid="history-description" aria-describedby="history-description-error" />
+							<p id="history-description-error" class="field-error" hidden data-testid="history-description-error"></p>
+						</div>
+
+						<div class="form-field" data-field="dentist_name">
+							<label for="history-dentist">Dentist</label>
+							<select id="history-dentist" name="dentist_name" required data-testid="history-dentist" aria-describedby="history-dentist-error">
+								<option value="">Select a dentist</option>
+							</select>
+							<p id="history-dentist-error" class="field-error" hidden data-testid="history-dentist-error"></p>
+						</div>
+
+						<div class="form-field" data-field="history_notes">
+							<label for="history-notes">Notes</label>
+							<textarea id="history-notes" name="history_notes" rows="2" data-testid="history-notes"></textarea>
+						</div>
+
 						<ul class="actions special modal-actions">
 							<li><button type="submit" class="button primary" data-testid="add-history">Add Visit</button></li>
 							<li><button type="button" class="button" id="cancel-add-visit-btn" data-testid="cancel-add-visit-btn">Cancel</button></li>
@@ -256,6 +278,7 @@
 		<script src="../js/app.js"></script>
 		<script src="../js/auth.js"></script>
 		<script src="../js/patients.js"></script>
+		<script src="../js/doctors.js"></script>
 		<script src="../js/staff-dashboard.js"></script>
 	</body>
 </html>

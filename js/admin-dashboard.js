@@ -8,6 +8,10 @@
   let currentPage = 1;
   let currentPatientId = null;
 
+  let allDoctors = [];
+  let currentDoctorId = null;
+  let currentDoctorPictureUrl = null;
+
   function getSearchFilters() {
     return {
       name: document.getElementById('search-name').value.trim().toLowerCase()
@@ -194,14 +198,132 @@
     if (firstField) firstField.focus();
   }
 
+  /**
+   * Builds initials for a doctor avatar (skips a leading "Dr." title).
+   * @param {string|null|undefined} name - Doctor display name.
+   * @returns {string} One or two uppercase initials.
+   */
+  function doctorInitials(name) {
+    const cleaned = String(name || '').replace(/^dr\.?\s+/i, '').trim();
+    if (!cleaned) return '?';
+    const parts = cleaned.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+      return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+    }
+    return cleaned.charAt(0).toUpperCase();
+  }
+
+  /**
+   * Renders a doctor avatar cell (image or initials placeholder).
+   * @param {object} doctor - Doctor row.
+   * @returns {string} HTML for the photo cell.
+   */
+  function doctorAvatarHtml(doctor) {
+    if (doctor.profile_picture_url) {
+      return '<img class="doctor-avatar" src="' + App.escapeHtml(doctor.profile_picture_url) +
+        '" alt="" width="40" height="40" />';
+    }
+    return '<span class="doctor-avatar doctor-avatar--placeholder" aria-hidden="true">' +
+      App.escapeHtml(doctorInitials(doctor.name)) + '</span>';
+  }
+
+  /**
+   * Truncates description text for the doctors table.
+   * @param {string|null|undefined} text - Full description.
+   * @param {number} max - Max characters before ellipsis.
+   * @returns {string}
+   */
+  function truncateText(text, max) {
+    if (!text) return '—';
+    const trimmed = text.trim();
+    if (trimmed.length <= max) return trimmed;
+    return trimmed.slice(0, max - 1) + '…';
+  }
+
+  function renderDoctorTable() {
+    const tbody = document.querySelector('#doctor-table tbody');
+    if (!allDoctors.length) {
+      tbody.innerHTML = '<tr><td colspan="4">No doctors found.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = allDoctors.map(function (d) {
+      return '<tr data-testid="doctor-row" data-doctor-id="' + d.id + '">' +
+        '<td class="col-photo">' + doctorAvatarHtml(d) + '</td>' +
+        '<td class="col-name">' + App.escapeHtml(d.name) + '</td>' +
+        '<td class="col-description">' + App.escapeHtml(truncateText(d.description, 80)) + '</td>' +
+        '<td class="col-actions"><div class="table-actions">' +
+        '<button type="button" class="icon-action edit-doctor" data-id="' + d.id + '" data-testid="edit-doctor" data-tooltip="Edit" aria-label="Edit">' +
+        '<i class="fas fa-pen" aria-hidden="true"></i></button>' +
+        '<button type="button" class="icon-action icon-action-danger delete-doctor" data-id="' + d.id + '" data-testid="delete-doctor" data-tooltip="Delete" aria-label="Delete">' +
+        '<i class="fas fa-trash" aria-hidden="true"></i></button>' +
+        '</div></td>' +
+        '</tr>';
+    }).join('');
+  }
+
+  async function loadDoctors() {
+    allDoctors = await Doctors.list();
+    renderDoctorTable();
+  }
+
+  function setDoctorPhotoPreview(url) {
+    const wrap = document.getElementById('doctor-photo-preview');
+    const img = document.getElementById('doctor-photo-preview-img');
+    if (!wrap || !img) return;
+    if (url) {
+      img.src = url;
+      wrap.hidden = false;
+    } else {
+      img.removeAttribute('src');
+      wrap.hidden = true;
+    }
+  }
+
+  function hideDoctorModal() {
+    const overlay = document.getElementById('doctor-form-overlay');
+    overlay.hidden = true;
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+    currentDoctorId = null;
+    currentDoctorPictureUrl = null;
+    setDoctorPhotoPreview(null);
+    const fileInput = document.getElementById('doctor-photo');
+    if (fileInput) fileInput.value = '';
+  }
+
+  /**
+   * Opens the add/edit doctor modal.
+   * @param {object|null} doctor - Existing doctor, or null for create.
+   */
+  function showDoctorForm(doctor) {
+    const overlay = document.getElementById('doctor-form-overlay');
+    const form = document.getElementById('doctor-form');
+    form.reset();
+    currentDoctorId = doctor ? doctor.id : null;
+    currentDoctorPictureUrl = doctor ? doctor.profile_picture_url : null;
+    document.getElementById('doctor-form-title').textContent =
+      doctor ? 'Edit Doctor' : 'Add Doctor';
+    if (doctor) Doctors.fillForm(form, doctor);
+    setDoctorPhotoPreview(currentDoctorPictureUrl);
+
+    overlay.hidden = false;
+    overlay.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+
+    const firstField = form.querySelector('[name="name"]');
+    if (firstField) firstField.focus();
+  }
+
   const TAB_TITLES = {
     clinic: 'Clinic Information',
-    patients: 'Patients'
+    patients: 'Patients',
+    doctors: 'Doctors'
   };
 
   /**
    * Switches the active admin section (sidebar nav + content panel).
-   * @param {string} tabId - Section id (`clinic` | `patients`).
+   * @param {string} tabId - Section id (`clinic` | `patients` | `doctors`).
    */
   function switchTab(tabId) {
     document.querySelectorAll('.tab-btn').forEach(function (btn) {
@@ -270,6 +392,44 @@
     }
   }
 
+  /**
+   * Saves a doctor (create or update) and optionally uploads a new profile picture.
+   * @param {SubmitEvent} e - Form submit event.
+   */
+  async function saveDoctorForm(e) {
+    e.preventDefault();
+    App.hideAlert('admin-alert');
+    const form = e.target;
+    const payload = Doctors.formToDoctor(form);
+    const fileInput = form.querySelector('[name="profile_picture"]');
+    const file = fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+
+    try {
+      let doctor;
+      if (currentDoctorId) {
+        doctor = await Doctors.update(currentDoctorId, payload);
+      } else {
+        doctor = await Doctors.create(payload);
+      }
+
+      if (file) {
+        const publicUrl = await Doctors.uploadProfilePicture(
+          doctor.id,
+          file,
+          currentDoctorPictureUrl
+        );
+        doctor = await Doctors.update(doctor.id, { profile_picture_url: publicUrl });
+      }
+
+      form.reset();
+      hideDoctorModal();
+      await loadDoctors();
+      App.showAlert('admin-alert', 'Doctor saved.', 'success');
+    } catch (err) {
+      App.handleError('admin-alert', err);
+    }
+  }
+
   function handleSearch(e) {
     e.preventDefault();
     App.hideAlert('admin-alert');
@@ -281,6 +441,17 @@
     document.getElementById('search-name').value = '';
     applyFilters();
     renderPatientTable();
+  }
+
+  /**
+   * Returns true when either patient or doctor modal is open.
+   * @returns {boolean}
+   */
+  function isAnyModalOpen() {
+    const patientOverlay = document.getElementById('patient-form-overlay');
+    const doctorOverlay = document.getElementById('doctor-form-overlay');
+    return (patientOverlay && !patientOverlay.hidden) ||
+      (doctorOverlay && !doctorOverlay.hidden);
   }
 
   document.addEventListener('DOMContentLoaded', async function () {
@@ -317,6 +488,7 @@
 
     document.getElementById('clinic-form').addEventListener('submit', saveClinicForm);
     document.getElementById('patient-form').addEventListener('submit', savePatientForm);
+    document.getElementById('doctor-form').addEventListener('submit', saveDoctorForm);
 
     document.querySelectorAll('.tab-btn').forEach(function (btn) {
       btn.addEventListener('click', function () {
@@ -328,6 +500,10 @@
       showPatientForm(null);
     });
 
+    document.getElementById('add-doctor-btn').addEventListener('click', function () {
+      showDoctorForm(null);
+    });
+
     document.getElementById('patient-search-form').addEventListener('submit', handleSearch);
     document.getElementById('clear-search-btn').addEventListener('click', clearSearch);
 
@@ -336,8 +512,18 @@
     document.getElementById('patient-form-overlay').addEventListener('click', function (e) {
       if (e.target === e.currentTarget) hidePatientModal();
     });
+
+    document.getElementById('cancel-doctor-btn').addEventListener('click', hideDoctorModal);
+    document.getElementById('close-doctor-overlay').addEventListener('click', hideDoctorModal);
+    document.getElementById('doctor-form-overlay').addEventListener('click', function (e) {
+      if (e.target === e.currentTarget) hideDoctorModal();
+    });
+
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && !document.getElementById('patient-form-overlay').hidden) {
+      if (e.key !== 'Escape' || !isAnyModalOpen()) return;
+      if (!document.getElementById('doctor-form-overlay').hidden) {
+        hideDoctorModal();
+      } else {
         hidePatientModal();
       }
     });
@@ -394,8 +580,34 @@
       }
     });
 
+    document.querySelector('#doctor-table').addEventListener('click', async function (e) {
+      const editBtn = e.target.closest('.edit-doctor');
+      const deleteBtn = e.target.closest('.delete-doctor');
+
+      if (editBtn) {
+        switchTab('doctors');
+        try {
+          const doctor = await Doctors.get(editBtn.dataset.id);
+          showDoctorForm(doctor);
+        } catch (err) {
+          App.handleError('admin-alert', err);
+        }
+      }
+
+      if (deleteBtn) {
+        if (!confirm('Delete this doctor?')) return;
+        try {
+          await Doctors.remove(deleteBtn.dataset.id);
+          await loadDoctors();
+          App.showAlert('admin-alert', 'Doctor deleted.', 'success');
+        } catch (err) {
+          App.handleError('admin-alert', err);
+        }
+      }
+    });
+
     try {
-      await Promise.all([loadClinicForm(), loadPatients(), loadStorageWarning()]);
+      await Promise.all([loadClinicForm(), loadPatients(), loadDoctors(), loadStorageWarning()]);
     } catch (err) {
       App.handleError('admin-alert', err);
     }
