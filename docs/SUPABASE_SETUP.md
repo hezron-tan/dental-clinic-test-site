@@ -60,7 +60,7 @@ Profile pictures are uploaded from the Admin → Doctors form into Supabase Stor
 | Field | Value |
 |-------|-------|
 | Email | `admin@clinic.test` |
-| Password | Choose a password (e.g. `TestAdmin123!`) |
+| Password | `admin123` |
 | Auto Confirm User | **On** |
 | User Metadata (raw JSON) | `{"role": "admin", "display_name": "Admin User"}` |
 
@@ -69,7 +69,7 @@ Profile pictures are uploaded from the Admin → Doctors form into Supabase Stor
 | Field | Value |
 |-------|-------|
 | Email | `staff@clinic.test` |
-| Password | Choose a password (e.g. `TestStaff123!`) |
+| Password | `staff123` |
 | Auto Confirm User | **On** |
 | User Metadata (raw JSON) | `{"role": "staff", "display_name": "Staff User"}` |
 
@@ -141,8 +141,8 @@ node scripts/generate-config.mjs
 # PowerShell
 $env:SUPABASE_URL="https://xxxx.supabase.co"
 $env:SUPABASE_ANON_KEY="eyJ..."
-$env:ADMIN_PASSWORD="TestAdmin123!"
-$env:STAFF_PASSWORD="TestStaff123!"
+$env:ADMIN_PASSWORD="admin123"
+$env:STAFF_PASSWORD="staff123"
 node scripts/verify-supabase.mjs
 ```
 
@@ -159,9 +159,9 @@ In your GitHub repo: **Settings → Secrets and variables → Actions → New re
 | `SUPABASE_URL` | Project URL |
 | `SUPABASE_ANON_KEY` | anon public key |
 | `ADMIN_EMAIL` | `admin@clinic.test` |
-| `ADMIN_PASSWORD` | your admin password |
+| `ADMIN_PASSWORD` | `admin123` |
 | `STAFF_EMAIL` | `staff@clinic.test` |
-| `STAFF_PASSWORD` | your staff password |
+| `STAFF_PASSWORD` | `staff123` |
 
 Enable GitHub Pages: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
 

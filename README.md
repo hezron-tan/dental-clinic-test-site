@@ -255,7 +255,7 @@ POST /auth/v1/token?grant_type=password
 apikey: YOUR_ANON_KEY
 Content-Type: application/json
 
-{"email": "staff@clinic.test", "password": "your-password"}
+{"email": "staff@clinic.test", "password": "staff123"}
 ```
 
 Use the `access_token` from the response as `Authorization: Bearer ...` for protected endpoints.
